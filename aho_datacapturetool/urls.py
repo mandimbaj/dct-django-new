@@ -14,9 +14,16 @@ from django.conf.urls.static import static # Facilitate display of static assets
 from django.conf.urls import handler404,handler500 # display custom 404 error page
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView,)
-from rest_framework.documentation import (
-    include_docs_urls, get_schemajs_view)
-from rest_framework_swagger.views import get_swagger_view
+try:
+    from rest_framework.documentation import (
+        include_docs_urls, get_schemajs_view)
+except ImportError:
+    include_docs_urls = None
+    get_schemajs_view = None
+try:
+    from rest_framework_swagger.views import get_swagger_view
+except ImportError:
+    get_swagger_view = None
 
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -28,10 +35,18 @@ admin.site.site_header="DCT Admin"
 admin.site.site_title="DCT Admin"
 admin.site.index_title="DCT Admin"
 
-schema_view = get_swagger_view(title='Data Capture Tool API Endpoints')
+schema_view = (
+    get_swagger_view(title='Data Capture Tool API Endpoints')
+    if get_swagger_view else None
+)
 
-api_patterns = [
-    path('', schema_view, name='swagger_docs'), # Load swagger docs page 3/5/21
+api_patterns = []
+if schema_view:
+    api_patterns.append(
+        path('', schema_view, name='swagger_docs') # Load swagger docs page 3/5/21
+    )
+
+api_patterns += [
     # path('', include('router.urls',namespace='api')),
     path('', include(('regions.urls','regions'),namespace='regions')),
     path('', include(('indicators.urls','indicators'),namespace='indicators')),
@@ -93,8 +108,6 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api-auth/', include('rest_framework.urls')), # For browsable REST API
-    path('api/docs/', include_docs_urls(title='iAHO-DCT',public=False)),
-    path('api/schema/', get_schemajs_view(title='iAHO-DCT', public=False)),
     path('api/auth-token/', obtain_auth_token),# added 23/08/2023 to generate tokens
 
     # Route that allows display of uploaded files when Debug=False in settings.py
@@ -102,6 +115,14 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     prefix_default_language=False # Hide default language code (en) on all urls
 
 )
+
+if include_docs_urls and get_schemajs_view:
+    urlpatterns += i18n_patterns(
+        path('api/docs/', include_docs_urls(title='iAHO-DCT',public=False)),
+        path('api/schema/', get_schemajs_view(title='iAHO-DCT', public=False)),
+        prefix_default_language=False
+    )
+
 # Routes for error handlers served by home view and templates/home/errors
 handler404 = 'home.views.handler404'
 handler500 = 'home.views.handler500'
