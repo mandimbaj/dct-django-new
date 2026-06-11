@@ -3,9 +3,30 @@ from import_export.fields import Field
 from .models import (FactDataIndicator, StgIndicator, StgIndicatorDomain,
     aho_factsindicator_archive,StgNarrative_Type,StgIndicatorNarrative,
     StgAnalyticsNarrative,AhoDoamain_Lookup,)
-from home.models import StgCategoryoption,StgDatasource,StgValueDatatype
+from home.models import StgCategoryoption,StgDatasource,StgMeasuremethod
 from regions.models import StgLocation
 from import_export.widgets import ForeignKeyWidget, DateWidget
+from django.utils import translation
+
+
+class TranslatedNameForeignKeyWidget(ForeignKeyWidget):
+    """Resolve Parler translated objects from the visible name used in import files."""
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(model, 'translations__name', *args, **kwargs)
+
+    def clean(self, value, row=None, **kwargs):
+        if value is None or value == '':
+            return None
+
+        language = (translation.get_language() or 'en').split('-', 1)[0]
+        queryset = self.model.objects.filter(
+            translations__name=str(value).strip(),
+            translations__language_code=language,
+        )
+        if not queryset.exists():
+            queryset = self.model.objects.filter(translations__name=str(value).strip())
+        return queryset.distinct().get()
 
 # This class requires the methods for saving the instance to be overriden
 class IndicatorFactsResourceImport(resources.ModelResource):
@@ -23,37 +44,30 @@ class IndicatorFactsResourceImport(resources.ModelResource):
                 pass
             else:
                 instance.save()
-    indicator_code = Field(column_name='Indicator Code',attribute='indicator',
-        widget=ForeignKeyWidget(StgIndicator, 'afrocode'))
     indicator_name = Field(column_name='Indicator Name',attribute='indicator',
-        widget=ForeignKeyWidget(StgIndicator, 'name'))
-    location_code = Field(column_name='Location Code',attribute='location',
-        widget=ForeignKeyWidget(StgLocation, 'code'))
-    location_name = Field(column_name='Location Name',attribute='location__name',
-        widget=ForeignKeyWidget(StgLocation, 'name'))
-    categoryoption_code = Field( column_name='Disaggregaton Code',
-        attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption,'code'))
+        widget=TranslatedNameForeignKeyWidget(StgIndicator))
+    location_name = Field(column_name='Location Name',attribute='location',
+        widget=TranslatedNameForeignKeyWidget(StgLocation))
     categoryoption_name = Field(column_name='Disaggregation Option',
-        attribute='categoryoption__name',widget=ForeignKeyWidget(
-        StgCategoryoption,'name'))
+        attribute='categoryoption',widget=TranslatedNameForeignKeyWidget(
+        StgCategoryoption))
     datasource = Field( column_name='Data Source',attribute='datasource',
-        widget=ForeignKeyWidget(StgDatasource, 'code'))
-    valuetype = Field( column_name='Data Value Type',attribute='valuetype',
-        widget=ForeignKeyWidget(StgValueDatatype, 'code'))
+        widget=TranslatedNameForeignKeyWidget(StgDatasource))
+    measuremethod = Field( column_name='Data Value Type',attribute='measuremethod',
+        widget=TranslatedNameForeignKeyWidget(StgMeasuremethod))
     start_period = Field(column_name='Start Period', attribute='start_period',)
     end_period = Field(column_name='End Period', attribute='end_period',)
     value_received = Field(column_name='Value',attribute='value_received',)
     target_value = Field(column_name='Target Value',attribute='target_value',)
     string_value = Field(column_name='String Value',attribute='string_value',)
-    comment = Field(column_name='Special Remarks',attribute='comment',)
 
     class Meta:
         model = FactDataIndicator
         skip_unchanged = False
         report_skipped = False
-        fields = ('indicator_code', 'location_code', 'categoryoption_code',
-            'datasource','valuetype','start_period','end_period',
-            'value_received','target_value','string_value','comment',)
+        fields = ('indicator_name','location_name','categoryoption_name',
+            'datasource','measuremethod','start_period','end_period',
+            'value_received','target_value','string_value',)
 
 
 class IndicatorFactsResourceExport(resources.ModelResource):
@@ -84,7 +98,8 @@ class IndicatorFactsResourceExport(resources.ModelResource):
         report_skipped = False
         fields = ('location__name','location__code','indicator__name',
             'indicator__afrocode','categoryoption__code','categoryoption__name',
-            'period','value_received','comment','string_value',)
+            'period','value_received','target_value','datasource','valuetype',
+            'comment','string_value',)
 
 
 class IndicatorResourceExport(resources.ModelResource):
@@ -128,7 +143,7 @@ class AchivedIndicatorResourceExport(resources.ModelResource):
         report_skipped = False
         fields = ('location__name','location__code','indicator__name',
             'indicator__afrocode','categoryoption__name','period',
-            'value_received','comment')
+            'value_received','datasource','string_value','comment')
 
 
 class DomainResourceImport(resources.ModelResource): #to be worked on!
@@ -198,8 +213,7 @@ class IndicatorNarrativeResourceExport(resources.ModelResource):
         model = StgIndicatorNarrative
         skip_unchanged = False
         report_skipped = False
-        fields = ('domain_code','domain_name', 'shortname', 'description',
-            'parent','level',)
+        fields = ('narrative_type','indicator','location','narrative_text',)
 
 class ThematicNarrativeResourceExport(resources.ModelResource):
     narrative_type = Field(attribute='narrative_type__name',
@@ -213,8 +227,7 @@ class ThematicNarrativeResourceExport(resources.ModelResource):
         model = StgAnalyticsNarrative
         skip_unchanged = False
         report_skipped = False
-        fields = ('domain_code','domain_name', 'shortname', 'description',
-            'parent','level',)
+        fields = ('narrative_type','domain','location','narrative_text',)
 
 class DomainLookupResourceExport(resources.ModelResource):
     indicator_name = Field(attribute='indicator_name', column_name='Theme Name')

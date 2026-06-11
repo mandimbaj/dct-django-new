@@ -111,6 +111,8 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Toggle columns": "Afficher ou masquer les colonnes",
         "Download CSV": "Telecharger CSV",
         "Import data": "Importer les donnees",
+        "Add data": "Ajouter les donnees",
+        "List": "Liste",
         "Import indicator data": "Importer les donnees indicateurs",
         "Choose file": "Choisir un fichier",
         "Selected file": "Fichier selectionne",
@@ -282,14 +284,18 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Values": "Valeurs",
         "Archive": "Archive",
         "Sources / methods": "Sources / methodes",
+        "Sources / methods / categories": "Sources / methodes / categories",
         "Level 2 locations: {count}": "Localisations niveau 2 : {count}",
         "Indicators with values: {count}": "Indicateurs avec valeurs : {count}",
         "Approved: {approved} | Pending: {pending} | Rejected: {rejected}": "Approuvees : {approved} | En attente : {pending} | Rejetees : {rejected}",
         "Values from fact_data_archive": "Valeurs provenant de fact_data_archive",
         "Available data sources and measure methods": "Sources de donnees et methodes de mesure disponibles",
+        "Data sources / measure methods / categories": "Sources de donnees / methodes de mesure / categories",
         "Registered application accounts": "Comptes utilisateurs enregistres",
         "Recent indicator uploads": "Indicateurs recemment charges",
+        "Top 5 recently loaded indicators": "Top 5 des indicateurs recemment charges",
         "Top 5 indicators used for the African Region": "Top 5 des indicateurs utilises pour la region africaine",
+        "Top 5 indicators loaded by countries": "Top 5 des indicateurs charges par les pays",
         "Top 5 data sources used": "Top 5 des sources de donnees utilisees",
         "Indicator values by period": "Valeurs des indicateurs par periode",
         "Active + archived records": "Donnees actives + archivees",
@@ -373,6 +379,8 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Toggle columns": "Mostrar ou ocultar colunas",
         "Download CSV": "Transferir CSV",
         "Import data": "Importar dados",
+        "Add data": "Adicionar dados",
+        "List": "Lista",
         "Import indicator data": "Importar dados dos indicadores",
         "Choose file": "Escolher ficheiro",
         "Selected file": "Ficheiro selecionado",
@@ -507,9 +515,13 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Approved: {approved} | Pending: {pending} | Rejected: {rejected}": "Aprovados: {approved} | Pendentes: {pending} | Rejeitados: {rejected}",
         "Values from fact_data_archive": "Valores de fact_data_archive",
         "Available data sources and measure methods": "Fontes de dados e metodos de medida disponiveis",
+        "Sources / methods / categories": "Fontes / metodos / categorias",
+        "Data sources / measure methods / categories": "Fontes de dados / metodos de medida / categorias",
         "Registered application accounts": "Contas de utilizador registadas",
         "Recent indicator uploads": "Indicadores carregados recentemente",
+        "Top 5 recently loaded indicators": "Top 5 indicadores carregados recentemente",
         "Top 5 indicators used for the African Region": "Top 5 indicadores usados na Regiao Africana",
+        "Top 5 indicators loaded by countries": "Top 5 indicadores carregados pelos paises",
         "Top 5 data sources used": "Top 5 fontes de dados usadas",
         "Indicator values by period": "Valores dos indicadores por periodo",
         "Active + archived records": "Dados ativos + arquivados",
@@ -978,9 +990,12 @@ def _count_indicator_data(filters: dict[str, Any] | None = None) -> int:
     return sum(_count(path, filters) for path in INDICATOR_DATA_MODEL_PATHS)
 
 
-def _indicator_data_status_summary() -> dict[str, int]:
+def _indicator_data_status_summary(model_paths: tuple[str, ...] | None = None) -> dict[str, int]:
     summary = {"total": 0, "approved": 0, "pending": 0, "rejected": 0}
-    for model in _indicator_data_models():
+    models = [_model(path) for path in (model_paths or INDICATOR_DATA_MODEL_PATHS)]
+    for model in models:
+        if model is None:
+            continue
         try:
             rows = model.objects.order_by().values("comment").annotate(total=Count("fact_id"))
             for row in rows:
@@ -1172,14 +1187,14 @@ def _period_values(limit: int = 5) -> list[dict[str, Any]]:
 @register.simple_tag
 def aho_dashboard() -> dict[str, Any]:
     language = translation.get_language() or "en"
-    cache_key = f"aho-dashboard:v3:{language}"
+    cache_key = f"aho-dashboard:v5:{language}"
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
     locations = _count("regions.StgLocation")
     level2_locations = _count("regions.StgLocation", {"locationlevel_id": 2})
-    status_summary = _indicator_data_status_summary()
+    status_summary = _indicator_data_status_summary(("indicators.FactDataIndicator",))
     indicator_values = status_summary["total"]
 
     dashboard = {
@@ -1211,9 +1226,9 @@ def aho_dashboard() -> dict[str, Any]:
                 "description": _ui_label("Values from fact_data_archive"),
             },
             {
-                "label": _ui_label("Sources / methods"),
-                "value": _count("home.StgDatasource") + _count("home.StgMeasuremethod"),
-                "description": _ui_label("Available data sources and measure methods"),
+                "label": _ui_label("Sources / methods / categories"),
+                "value": f"{_count('home.StgDatasource')} / {_count('home.StgMeasuremethod')} / {_count('home.StgCategoryoption')}",
+                "description": _ui_label("Data sources / measure methods / categories"),
             },
             {
                 "label": _ui_label("Users"),
@@ -1223,7 +1238,7 @@ def aho_dashboard() -> dict[str, Any]:
         ],
         "charts": [
             {
-                "title": _ui_label("Recent indicator uploads"),
+                "title": _ui_label("Top 5 recently loaded indicators"),
                 "rows": _recent_uploads(),
             },
             {
@@ -1231,12 +1246,12 @@ def aho_dashboard() -> dict[str, Any]:
                 "rows": _top_indicator_data_values("indicator"),
             },
             {
-                "title": _ui_label("Top 5 data sources used"),
-                "rows": _top_indicator_data_values("datasource"),
+                "title": _ui_label("Top 5 indicators loaded by countries"),
+                "rows": _top_indicator_data_values("location"),
             },
             {
-                "title": _ui_label("Indicator values by period"),
-                "rows": _period_values(),
+                "title": _ui_label("Top 5 data sources used"),
+                "rows": _top_indicator_data_values("datasource"),
             },
         ],
         "language": language,

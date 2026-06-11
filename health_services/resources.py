@@ -33,7 +33,8 @@ class HSCFactsResourceExport(resources.ModelResource):
         report_skipped = False
         fields = ('location__name','location__code','indicator__name',
             'indicator__afrocode','categoryoption__code','categoryoption__name',
-            'periodicity','period','value_received','comment',)
+            'periodicity','period','value_received','target_value','datasource',
+            'valuetype','comment',)
 
 
 class HSCIndicatorResourceExport(resources.ModelResource):

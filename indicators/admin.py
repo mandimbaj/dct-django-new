@@ -532,6 +532,17 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
             requested_size = self.list_per_page
         return requested_size if requested_size in (10, 25, 50, 100, 250) else self.list_per_page
 
+    def get_changelist(self, request, **kwargs):
+        changelist_class = super().get_changelist(request, **kwargs)
+
+        class IndicatorFactChangeList(changelist_class):
+            def get_filters_params(self, params=None):
+                filters_params = super().get_filters_params(params)
+                filters_params.pop('per_page', None)
+                return filters_params
+
+        return IndicatorFactChangeList
+
     #This field needed for controlled approval of resource before ETL process
     readonly_fields=('comment',)
 

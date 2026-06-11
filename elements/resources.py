@@ -52,9 +52,9 @@ class FactDataResourceImport(resources.ModelResource):
         model = FactDataElement
         skip_unchanged = False
         report_skipped = False
-        exclude = ('dataelement_name','location_name','categoryoption_name',)
-        fields = ('element_code','location_code','categoryoption_code',
-            'start_period','start_period', 'value',)
+        fields = ('dataelement_name','element_code','location_code',
+            'location_name','categoryoption','categoryoption_name','datasource',
+            'valuetype','start_period','end_period','value',)
 
 
 class FactDataResourceExport(resources.ModelResource):

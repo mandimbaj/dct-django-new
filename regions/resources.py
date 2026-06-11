@@ -62,14 +62,13 @@ class LocationResourceImport (resources.ModelResource):
         model = StgLocation
         skip_unchanged = False
         report_skipped = False
-        exclude = ('location_name',)
-        fields = ('code','level','iso_apha','iso_number','description',
-            'latitude','longitude','wb_incomegroup','economic_zone',
-            'special_state',)
+        fields = ('location_name','code','level','iso_apha','iso_number',
+            'description','latitude','longitude','wb_incomegroup',
+            'economic_zone','special_state',)
 
 
 class LocationLevelResourceExport (resources.ModelResource):
-    Level_name = Field(attribute='name', column_name='Location Name')
+    level_name = Field(attribute='name', column_name='Location Name')
     code = Field(attribute='code', column_name='Level Code')
     level_type = Field(attribute='type', column_name='Type')
     description = Field(attribute='latitude', column_name='Latitude')

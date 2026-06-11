@@ -1820,6 +1820,232 @@ select:focus,
     padding: 1rem 1.25rem 0;
 }
 
+.aho-breadcrumbs {
+    gap: 0.45rem;
+}
+
+.aho-breadcrumbs > span:not(.aho-breadcrumbs__separator) {
+    color: var(--who-afro-ink);
+    font-weight: 750;
+}
+
+.aho-breadcrumbs__separator {
+    color: #94a3b8;
+    font-weight: 800;
+}
+
+#changelist-filter input,
+#changelist-filter select {
+    background: white !important;
+    border: 1px solid #c9d4dd !important;
+    border-radius: 7px !important;
+    color: var(--who-afro-ink);
+    display: block;
+    font-size: 0.83rem;
+    min-height: 2.25rem;
+    margin: 0.35rem 1rem 0.65rem;
+    max-width: calc(100% - 2rem);
+    padding: 0.35rem 0.55rem;
+    width: calc(100% - 2rem);
+}
+
+.aho-table-import-btn {
+    align-items: center;
+    background: white;
+    border: 1px solid color-mix(in srgb, var(--who-afro-blue) 36%, var(--who-afro-panel-border));
+    border-radius: 6px;
+    color: var(--who-afro-blue-deep);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.82rem;
+    font-weight: 750;
+    gap: 0.45rem;
+    min-height: 2.15rem;
+    padding: 0 0.75rem;
+}
+
+.aho-table-add-btn {
+    text-decoration: none;
+}
+
+.aho-table-import-btn:hover,
+.aho-table-import-btn:focus-visible {
+    background: color-mix(in srgb, var(--who-afro-blue) 8%, white);
+    color: var(--who-afro-blue-deep);
+    outline: 0;
+}
+
+body.aho-indicator-values-page #result_list .action-checkbox-column,
+body.aho-indicator-values-page #result_list .action-checkbox {
+    display: none !important;
+}
+
+.aho-inline-action--approved {
+    border-color: color-mix(in srgb, var(--who-afro-success-color) 26%, white) !important;
+    color: var(--who-afro-success-color) !important;
+}
+
+.aho-inline-action--pending {
+    border-color: color-mix(in srgb, var(--who-afro-warning-color) 30%, white) !important;
+    color: var(--who-afro-warning-color) !important;
+}
+
+.aho-inline-action--rejected,
+.aho-inline-action--danger {
+    border-color: color-mix(in srgb, var(--who-afro-error-color) 28%, white) !important;
+    color: var(--who-afro-error-color) !important;
+}
+
+.aho-pagination-size {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+    margin-left: auto;
+}
+
+.aho-pagination-size select {
+    background: white !important;
+    border: 1px solid var(--who-afro-panel-border) !important;
+    border-radius: 6px !important;
+    color: var(--who-afro-ink);
+    font-weight: 750;
+    min-height: 1.9rem;
+    padding: 0 0.45rem;
+}
+
+.aho-import-modal[hidden] {
+    display: none;
+}
+
+.aho-import-modal {
+    inset: 0;
+    position: fixed;
+    z-index: 260;
+}
+
+.aho-import-modal__backdrop {
+    background: rgb(15 23 42 / 38%);
+    inset: 0;
+    position: absolute;
+}
+
+.aho-import-modal__panel {
+    background: var(--who-afro-panel);
+    border: 1px solid var(--who-afro-panel-border);
+    border-radius: 8px;
+    box-shadow: 0 24px 70px rgb(15 23 42 / 28%);
+    color: var(--who-afro-ink);
+    left: 50%;
+    max-width: min(34rem, calc(100vw - 2rem));
+    position: absolute;
+    top: calc(var(--aho-topbar-height) + 4rem);
+    transform: translateX(-50%);
+    width: 34rem;
+}
+
+.aho-import-modal__header,
+.aho-import-modal__body,
+.aho-import-modal__footer {
+    padding: 1rem;
+}
+
+.aho-import-modal__header {
+    align-items: flex-start;
+    border-bottom: 1px solid var(--who-afro-panel-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.aho-import-modal__header h2 {
+    color: var(--who-afro-ink);
+    font-size: 1rem;
+    font-weight: 850;
+    margin: 0 0 0.25rem;
+}
+
+.aho-import-modal__header p,
+.aho-import-file__name {
+    color: var(--who-afro-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.aho-import-modal__close {
+    align-items: center;
+    background: white;
+    border: 1px solid var(--who-afro-panel-border);
+    border-radius: 6px;
+    color: var(--who-afro-ink);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 1.2rem;
+    justify-content: center;
+    min-height: 2rem;
+    min-width: 2rem;
+}
+
+.aho-import-file {
+    border: 1px dashed color-mix(in srgb, var(--who-afro-blue) 42%, var(--who-afro-panel-border));
+    border-radius: 8px;
+    color: var(--who-afro-blue-deep);
+    cursor: pointer;
+    display: grid;
+    font-size: 0.86rem;
+    font-weight: 800;
+    gap: 0.4rem;
+    padding: 0.9rem;
+}
+
+.aho-import-file input {
+    border: 0 !important;
+    padding: 0 !important;
+}
+
+.aho-import-file__name,
+.aho-import-template-link {
+    margin-top: 0.85rem;
+}
+
+.aho-import-template-link {
+    color: var(--who-afro-blue-deep) !important;
+    display: inline-flex;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.aho-import-modal__footer {
+    align-items: center;
+    border-top: 1px solid var(--who-afro-panel-border);
+    display: flex;
+    gap: 0.55rem;
+    justify-content: flex-end;
+}
+
+.aho-import-modal__primary,
+.aho-import-modal__secondary {
+    align-items: center;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.82rem;
+    font-weight: 800;
+    min-height: 2.15rem;
+    padding: 0 0.85rem;
+}
+
+.aho-import-modal__primary {
+    background: var(--who-afro-blue);
+    color: white !important;
+}
+
+.aho-import-modal__secondary {
+    background: white;
+    border: 1px solid var(--who-afro-panel-border);
+    color: var(--who-afro-ink);
+}
+
 ul.messagelist li {
     background: #ecfdf3 !important;
     border-radius: 6px;

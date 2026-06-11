@@ -13,7 +13,7 @@
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}">
     {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive_rtl.css" %}">{% endif %}
-    <link rel="stylesheet" type="text/css" href="{% static "ahocss/django-filament-preview.css" %}?v=20260611-9">
+    <link rel="stylesheet" type="text/css" href="{% static "ahocss/django-filament-preview.css" %}?v=20260611-10">
 {% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
 </head>
@@ -340,6 +340,64 @@
             }
         }
 
+        function pathWithoutLocale(path) {
+            return (path || '').replace(/^\/(fr|pt)(?=\/)/, '');
+        }
+
+        function normalizeCrumbPath(path) {
+            var normalized = pathWithoutLocale(path || '/admin/');
+            return normalized.replace(/\/+$/, '') + '/';
+        }
+
+        function renderLaravelBreadcrumbs() {
+            var breadcrumbs = document.querySelector('.breadcrumbs');
+            if (!breadcrumbs || !searchEntries.length) {
+                return;
+            }
+            var currentPath = normalizeCrumbPath(window.location.pathname);
+            var match = searchEntries.filter(function (entry) {
+                if (!entry.url) {
+                    return false;
+                }
+                var url = new URL(entry.url, window.location.origin);
+                return currentPath.indexOf(normalizeCrumbPath(url.pathname)) === 0;
+            }).sort(function (left, right) {
+                return normalizeCrumbPath(new URL(right.url, window.location.origin).pathname).length - normalizeCrumbPath(new URL(left.url, window.location.origin).pathname).length;
+            })[0];
+            if (!match) {
+                breadcrumbs.classList.add('aho-breadcrumbs');
+                return;
+            }
+            var crumbs = [
+                {label: match.section || "{{ 'Indicators'|aho_ui_label|escapejs }}", url: null},
+                {label: match.label, url: match.url},
+                {label: "{{ 'List'|aho_ui_label|escapejs }}", url: null}
+            ];
+            breadcrumbs.className = 'breadcrumbs aho-breadcrumbs';
+            breadcrumbs.innerHTML = '';
+            crumbs.forEach(function (crumb, index) {
+                if (index > 0) {
+                    var separator = document.createElement('span');
+                    separator.className = 'aho-breadcrumbs__separator';
+                    separator.setAttribute('aria-hidden', 'true');
+                    separator.textContent = '/';
+                    breadcrumbs.appendChild(separator);
+                }
+                if (crumb.url && index < crumbs.length - 1) {
+                    var link = document.createElement('a');
+                    link.href = crumb.url;
+                    link.textContent = crumb.label;
+                    breadcrumbs.appendChild(link);
+                    return;
+                }
+                var label = document.createElement('span');
+                label.textContent = crumb.label;
+                breadcrumbs.appendChild(label);
+            });
+        }
+
+        renderLaravelBreadcrumbs();
+
         function ensureSearchResults() {
             if (searchResults || !searchInput) {
                 return searchResults;
@@ -585,6 +643,102 @@
             return '<span class="aho-table-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="4" height="12" rx="1"></rect><rect x="8" y="4" width="4" height="12" rx="1"></rect><rect x="13" y="4" width="4" height="12" rx="1"></rect></svg></span>';
         }
 
+        function uploadIcon() {
+            return '<span class="aho-table-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15V6"></path><path d="m6.5 9.5 3.5-3.5 3.5 3.5"></path><path d="M4 15.5h12"></path></svg></span>';
+        }
+
+        function plusIcon() {
+            return '<span class="aho-table-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M10 4v12"></path><path d="M4 10h12"></path></svg></span>';
+        }
+
+        function currentAdminPath() {
+            return window.location.pathname.replace(/^\/(fr|pt)(?=\/)/, '');
+        }
+
+        function isIndicatorValuesPage() {
+            return /\/admin\/indicators\/factdataindicator\/?$/.test(currentAdminPath());
+        }
+
+        function indicatorImportTemplateCsv() {
+            var rows = [
+                ['Indicator Name', 'Location Name', 'Disaggregation Option', 'Data Source', 'Data Value Type', 'Start Period', 'End Period', 'Value', 'Target Value', 'String Value'],
+                ['Example indicator', 'Senegal', 'Both sexes', 'Routine health information system', 'Count (Numeric Integer)', '2024', '2024', '120', '', '']
+            ];
+            return rows.map(function (row) {
+                return row.map(csvValue).join(',');
+            }).join('\n');
+        }
+
+        function openIndicatorImportModal() {
+            var modal = document.querySelector('[data-aho-indicator-import-modal]');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.className = 'aho-import-modal';
+                modal.hidden = true;
+                modal.setAttribute('data-aho-indicator-import-modal', '1');
+                modal.innerHTML = '<div class="aho-import-modal__backdrop" data-aho-import-close></div>' +
+                    '<section class="aho-import-modal__panel" role="dialog" aria-modal="true" aria-labelledby="aho-import-title">' +
+                        '<header class="aho-import-modal__header">' +
+                            '<div><h2 id="aho-import-title">{{ 'Import indicator data'|aho_ui_label|escapejs }}</h2>' +
+                            '<p>{{ 'Use the CSV model below, then continue to the import wizard to upload and validate the file.'|aho_ui_label|escapejs }}</p></div>' +
+                            '<button type="button" class="aho-import-modal__close" data-aho-import-close aria-label="{{ 'Close'|aho_ui_label|escapejs }}">&times;</button>' +
+                        '</header>' +
+                        '<div class="aho-import-modal__body">' +
+                            '<label class="aho-import-file"><span>{{ 'Choose file'|aho_ui_label|escapejs }}</span><input type="file" accept=".csv,.xlsx,.xls" data-aho-import-file></label>' +
+                            '<div class="aho-import-file__name" data-aho-import-file-name>{{ 'No file selected'|aho_ui_label|escapejs }}</div>' +
+                            '<a class="aho-import-template-link" href="#" download="indicator_values_import_template.csv" data-aho-import-template>{{ 'Download template'|aho_ui_label|escapejs }}</a>' +
+                        '</div>' +
+                        '<footer class="aho-import-modal__footer">' +
+                            '<button type="button" class="aho-import-modal__secondary" data-aho-import-close>{{ 'Close'|aho_ui_label|escapejs }}</button>' +
+                            '<a class="aho-import-modal__primary" href="{% url 'admin:home_filesource_add' %}">{{ 'Continue to import wizard'|aho_ui_label|escapejs }}</a>' +
+                        '</footer>' +
+                    '</section>';
+                document.body.appendChild(modal);
+
+                modal.querySelectorAll('[data-aho-import-close]').forEach(function (control) {
+                    control.addEventListener('click', function () {
+                        modal.hidden = true;
+                    });
+                });
+                modal.querySelector('[data-aho-import-file]').addEventListener('change', function () {
+                    var name = this.files && this.files.length ? this.files[0].name : "{{ 'No file selected'|aho_ui_label|escapejs }}";
+                    modal.querySelector('[data-aho-import-file-name]').textContent = this.files && this.files.length ? "{{ 'Selected file'|aho_ui_label|escapejs }}: " + name : name;
+                });
+                modal.querySelector('[data-aho-import-template]').addEventListener('click', function () {
+                    var blob = new Blob([indicatorImportTemplateCsv()], {type: 'text/csv;charset=utf-8;'});
+                    var objectUrl = URL.createObjectURL(blob);
+                    this.href = objectUrl;
+                    window.setTimeout(function () {
+                        URL.revokeObjectURL(objectUrl);
+                    }, 4000);
+                });
+            }
+            modal.hidden = false;
+        }
+
+        function installIndicatorImportButton(toolbar) {
+            if (!isIndicatorValuesPage() || !toolbar || toolbar.querySelector('[data-aho-import-indicators]')) {
+                return;
+            }
+            document.body.classList.add('aho-indicator-values-page');
+            var button = createTableButton('aho-table-import-btn', "{{ 'Import data'|aho_ui_label|escapejs }}", uploadIcon(), "{{ 'Import data'|aho_ui_label|escapejs }}");
+            button.setAttribute('data-aho-import-indicators', '1');
+            button.addEventListener('click', openIndicatorImportModal);
+            toolbar.querySelector('.aho-table-toolbar__left').appendChild(button);
+        }
+
+        function installIndicatorManualAddButton(toolbar) {
+            if (!isIndicatorValuesPage() || !toolbar || toolbar.querySelector('[data-aho-add-indicator-data]')) {
+                return;
+            }
+            var link = document.createElement('a');
+            link.className = 'aho-table-add-btn aho-table-import-btn';
+            link.href = window.location.pathname.replace(/\/$/, '') + '/add/';
+            link.setAttribute('data-aho-add-indicator-data', '1');
+            link.innerHTML = plusIcon() + '<span>{{ 'Add data'|aho_ui_label|escapejs }}</span>';
+            toolbar.querySelector('.aho-table-toolbar__left').appendChild(link);
+        }
+
         function installExportButton(toolbar, table) {
             var button = toolbar.querySelector('[data-aho-export-table]');
             if (!button) {
@@ -618,7 +772,7 @@
             panel.hidden = true;
             var headers = Array.from(table.querySelectorAll('thead th'));
             headers.forEach(function (header, index) {
-                if (header.classList.contains('aho-row-actions-heading')) {
+                if (header.classList.contains('aho-row-actions-heading') || header.classList.contains('action-checkbox-column')) {
                     return;
                 }
                 var label = document.createElement('label');
@@ -689,7 +843,12 @@
                 right.className = 'aho-table-toolbar__right';
                 toolbar.appendChild(right);
             }
+            if (isIndicatorValuesPage()) {
+                document.body.classList.add('aho-indicator-values-page');
+            }
             installExportButton(toolbar, table);
+            installIndicatorImportButton(toolbar);
+            installIndicatorManualAddButton(toolbar);
             installColumnToggle(toolbar, table);
             wrapLongTableCells(table);
         }
@@ -735,6 +894,7 @@
         var adminTableToolbar = buildAdminTableToolbar();
         var changelistFilter = document.getElementById('changelist-filter');
         if (changelistFilter) {
+            changelistFilter.classList.add('aho-filter-panel');
             var toolbar = adminTableToolbar || document.querySelector('#changelist .aho-admin-table-toolbar') || document.getElementById('changelist');
             var filterTitle = changelistFilter.querySelector('h2');
             if (filterTitle) {
@@ -761,6 +921,10 @@
                 if (event.key === 'Escape') {
                     document.body.classList.remove('aho-filters-open');
                     filterButton.setAttribute('aria-expanded', 'false');
+                    var importModal = document.querySelector('[data-aho-indicator-import-modal]');
+                    if (importModal) {
+                        importModal.hidden = true;
+                    }
                 }
             });
         } else if (adminTableToolbar) {
@@ -868,6 +1032,29 @@
                 paginator.querySelectorAll('.this-page').forEach(function (current) {
                     current.classList.add('aho-pagination-current');
                 });
+                if (isIndicatorValuesPage()) {
+                    var params = new URLSearchParams(window.location.search);
+                    var currentSize = params.get('per_page') || '50';
+                    var sizeLabel = document.createElement('label');
+                    sizeLabel.className = 'aho-pagination-size';
+                    sizeLabel.appendChild(document.createTextNode("{{ 'Rows per page'|aho_ui_label|escapejs }}"));
+                    var select = document.createElement('select');
+                    [10, 25, 50, 100, 250].forEach(function (size) {
+                        var option = document.createElement('option');
+                        option.value = String(size);
+                        option.textContent = String(size);
+                        option.selected = String(size) === currentSize;
+                        select.appendChild(option);
+                    });
+                    select.addEventListener('change', function () {
+                        var nextParams = new URLSearchParams(window.location.search);
+                        nextParams.set('per_page', this.value);
+                        nextParams.delete('p');
+                        window.location.search = nextParams.toString();
+                    });
+                    sizeLabel.appendChild(select);
+                    paginator.appendChild(sizeLabel);
+                }
             });
         }
 
@@ -929,16 +1116,17 @@
                             return;
                         }
                         var link = document.createElement('a');
-                        link.className = 'aho-inline-action';
+                        link.className = 'aho-inline-action aho-inline-action--edit';
                         link.href = action.href;
                         link.textContent = action.label;
+                        link.title = action.label;
                         cell.appendChild(link);
                         return;
                     }
                     var form = document.createElement('form');
                     form.method = 'post';
                     form.action = actionUrl;
-                    form.className = 'aho-inline-action-form';
+                    form.className = 'aho-inline-action-form aho-inline-action-form--' + action.operation;
                     if (action.operation === 'delete') {
                         form.addEventListener('submit', function (event) {
                             if (!window.confirm(action.label + ' ?')) {
@@ -963,8 +1151,10 @@
                     var button = document.createElement('button');
                     button.type = 'submit';
                     var isCurrentStatus = action.statusOnly && action.operation === currentStatus;
-                    button.className = 'aho-inline-action' + (action.danger ? ' aho-inline-action--danger' : '') + (isCurrentStatus ? ' aho-inline-action--disabled' : '');
+                    button.className = 'aho-inline-action aho-inline-action--' + action.operation + (action.danger ? ' aho-inline-action--danger' : '') + (isCurrentStatus ? ' aho-inline-action--disabled' : '');
                     button.textContent = action.label;
+                    button.title = action.label;
+                    button.setAttribute('data-aho-operation', action.operation);
                     if (isCurrentStatus) {
                         button.disabled = true;
                         button.title = "{{ 'Already selected'|aho_ui_label|escapejs }}";

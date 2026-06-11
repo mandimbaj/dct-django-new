@@ -79,5 +79,5 @@ class HealthWorkforceProductResourceExport (resources.ModelResource):
         model = HumanWorkforceResourceProxy
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','title','type','domain','location','repository',
-            'abstract','author','year_published','external_url',)
+        fields = ('code','title','type','categorization','location','author',
+            'year_published','external_url',)

@@ -155,9 +155,9 @@ class StgFacilityResourceImport (resources.ModelResource):
     external_url = Field(column_name='External Link', attribute='external_url')
 
     class Meta:
-        exclude = ('location_name',)
         model = StgHealthFacility
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','title', 'type','categorization','location_code','repository',
-            'description','abstract', 'author','year_published','external_url', )
+        fields = ('code','title','type','categorization','location_code',
+            'location_name','repository','description','abstract','author',
+            'year_published','external_url', )
