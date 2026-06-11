@@ -31,7 +31,8 @@ jobs:
           zip -r release.zip . \
             --exclude "*.git*" \
             --exclude "__pycache__/*" \
-            --exclude "*.pyc"
+            --exclude "*.pyc" \
+            --exclude "*.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -48,10 +49,15 @@ jobs:
         with:
           name: python-app
 
+      - name: Unzip artifact
+        run: |
+          unzip release.zip -d ./app
+          ls -la ./app
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: af-aho-datacapturetool
           slot-name: new
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NEW }}
-          package: release.zip
+          package: ./app
