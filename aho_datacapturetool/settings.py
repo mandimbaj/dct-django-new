@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'parler', #language translation package
     'smart_selects',
 	'import_export',
-    'authentication',
+    'authentication.apps.AuthenticationConfig',
     'home',
     'indicators',
     'elements',
@@ -151,6 +151,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware', # added
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'authentication.activity.ActivityLogMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'admin_reorder.middleware.ModelAdminReorder', # added

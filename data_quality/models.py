@@ -104,9 +104,6 @@ class Facts_DataFrame (models.Model):
     end_period = models.PositiveIntegerField(
         blank=True,verbose_name=_('End Period')) 
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
-    language_code  = models.CharField(_("Language"),max_length=10, 
-        null=False,blank=False)
-    
     objects = DataFrameManager() #connect the model to the dataframe manager
 
     class Meta:

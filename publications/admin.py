@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Case, IntegerField, Value, When
 from parler.admin import TranslatableAdmin
 from django.utils.html import format_html
 import data_wizard # Solution to data import madness that had refused to go
@@ -9,6 +10,7 @@ from .models import (StgProductDomain,StgKnowledgeProduct,StgResourceType,
 from commoninfo.admin import OverideImportExport,OverideExport
 
 from commoninfo.admin_filters import (LocationFilter,KnowledgeResourceFilter)
+from django_admin_listfilter_dropdown.filters import ChoiceDropdownFilter
 from aho_datacapturetool.settings import *
 from regions.models import StgLocation,StgLocationLevel
 from regions.views import LocationSearchView
@@ -137,10 +139,20 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
             'translations','type__translations','location__translations').filter(
                 translations__language_code=language).filter(
                 type__translations__language_code=language).filter(
-                location__translations__language_code=language).order_by(
-                    'translations__title').filter(
-                location__translations__language_code=language).order_by(
-                    'location__translations__name').distinct()
+                location__translations__language_code=language).filter(
+                location__translations__language_code=language).annotate(
+                approval_priority=Case(
+                    When(comment__iexact='pending', then=Value(0)),
+                    When(comment__iexact='rejected', then=Value(1)),
+                    When(comment__iexact='approved', then=Value(2)),
+                    default=Value(3),
+                    output_field=IntegerField(),
+                )
+            ).order_by(
+                    'approval_priority',
+                    'location__translations__name',
+                    'translations__title',
+                ).distinct()
 
 
         # Get a query of groups the user belongs and flatten it to list object
@@ -348,11 +360,11 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
     search_fields = ('translations__title','type__translations__name',
         'location__translations__name',) #display search field
     list_per_page = 50 #limit records displayed on admin site to 30
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved,transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code','comment')
    
-    list_filter = [LocationFilter,KnowledgeResourceFilter,] # optimal solution to admin filter refactored 01/02/2023  
+    list_filter = [('comment', ChoiceDropdownFilter), LocationFilter,KnowledgeResourceFilter,] # optimal solution to admin filter refactored 01/02/2023  
 
 
 

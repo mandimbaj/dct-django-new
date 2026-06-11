@@ -7,6 +7,7 @@ import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.fields import DecimalField
 from django.core.exceptions import ValidationError
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields
 from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod,
@@ -107,8 +108,9 @@ class StgIndicator(TranslatableModel):
     without returning the language code error! resolved on 10th August 2020
     """
     def __str__(self):
+        language_code = (translation.get_language() or settings.LANGUAGE_CODE).split("-", 1)[0]
         return self.safe_translation_getter(
-            'name', any_language=True,language_code=settings.LANGUAGE_CODE)
+            'name', any_language=True, language_code=language_code)
 
     # The filter function need to be modified to work with django parler as follows:
     def clean(self): # Don't allow end_period to be greater than the start_period.

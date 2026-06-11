@@ -269,7 +269,7 @@ class ResourceAdmin(TranslatableAdmin,ExportActionModelAdmin):
             actions.pop('delete_selected', None)
         return actions
 
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved,transition_to_rejected]
 
     fieldsets = (
@@ -683,7 +683,7 @@ class HealthworforceFactsAdmin(ExportActionModelAdmin,OverideExport):
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved,transition_to_rejected,]
 
 

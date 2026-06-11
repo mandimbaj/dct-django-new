@@ -147,7 +147,7 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
         user_location = request.user.location.location_id
         qs = super().get_queryset(request).filter(
             translations__language_code=language).order_by(
-            'translations_name').distinct().filter(
+            'translations__name').distinct().filter(
             locationlevel__translations__language_code=language).order_by(
             'locationlevel__translations__name').distinct()
         return qs

@@ -6,7 +6,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import path,include,re_path
-from home import views
+from home import admin_views, views
 from django.conf.urls.i18n import i18n_patterns #added
 from django.views.static import serve # hack to support display of uploaded files
 from django.conf import settings # Facilitate viewing on browser pdf reader
@@ -59,6 +59,16 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     # This pattern is used to redirect native auth to custom view and template
     path('admin/logout/', lambda request: redirect(
         '/microsoft_authentication/logout', permanent=False)),
+    path('admin/indicators/imports/', admin_views.indicator_imports, name='aho_indicator_imports'),
+    path('admin/indicators/exports/', admin_views.indicator_exports, name='aho_indicator_exports'),
+    path('admin/data-integration/connections/', admin_views.data_integration_connections, name='aho_data_integration_connections'),
+    path('admin/data-integration/failed-rows/', admin_views.data_integration_failed_rows, name='aho_data_integration_failed_rows'),
+    path('admin/data-quality/indicator-checks/', admin_views.data_quality_indicator_checks, name='aho_data_quality_indicator_checks'),
+    path('admin/data-quality/facts-dataset/', admin_views.data_quality_facts_dataset, name='aho_data_quality_facts_dataset'),
+    path('admin/api-tokens/token-status/', admin_views.api_token_status, name='aho_api_token_status'),
+    path('admin/global-search/', admin_views.global_search, name='aho_global_search'),
+    path('admin/row-action/', admin_views.row_action, name='aho_row_action'),
+    path('admin/quality/',include('data_quality.urls',namespace='data_quality')),
     path('admin/', admin.site.urls,name='dashboard'),
     path('microsoft_authentication/', include('authentication.urls')),
     path('datawizard/', include('data_wizard.urls')), #for data import wizard
@@ -78,7 +88,6 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(),
         name='password_change_done'),
 
-    path('admin/quality/',include('data_quality.urls',namespace='data_quality')),
    # API-based URL patterns for hitting KHRO endpoints for consuming data in JSON
     path('api/', include((api_patterns, 'api'), namespace='api')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

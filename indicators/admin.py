@@ -104,7 +104,7 @@ class GroupedModelChoiceField(ModelChoiceField):
         if hasattr(self, '_choices'):
             return self._choices
         return GroupedModelChoiceIterator(self)
-    choices = property(_get_choices, ModelChoiceField._set_choices)
+    choices = property(_get_choices, ModelChoiceField.choices.fset)
 
 
 @admin.register(StgIndicatorReference)
@@ -506,7 +506,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     search_fields = ('indicator__translations__name','location__translations__name',
         'period','indicator__afrocode','comment','priority') #display search field
    
-    list_filter = [LocationFilter,IndicatorsFilter, # optimal filter refactored 01/02/2023
+    list_filter = [('comment', ChoiceDropdownFilter), LocationFilter,IndicatorsFilter, # optimal filter refactored 01/02/2023
         DatasourceFilter,CategoryOptionFilter]
 
     list_select_related = ('indicator','location','categoryoption','datasource',
@@ -518,7 +518,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     #This field needed for controlled approval of resource before ETL process
     readonly_fields=('comment',)
 
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved,transition_to_rejected,]
 
 

@@ -1,0 +1,155 @@
+{% extends "admin/base_site.html" %}
+{% load i18n aho_admin %}
+
+{% block bodyclass %}{{ block.super }} aho-api-page{% endblock %}
+
+{% block content %}
+<section class="aho-api">
+    <header class="aho-api__hero">
+        <div>
+            <span class="aho-api__eyebrow">{{ 'API tokens'|aho_ui_label }}</span>
+            <h2>{{ 'Token status'|aho_ui_label }}</h2>
+            {% if subtitle %}
+                <p>{{ subtitle }}</p>
+            {% endif %}
+        </div>
+        <article class="aho-api__summary">
+            <span>{{ 'Active tokens'|aho_ui_label }}</span>
+            <strong>{{ token_count }}</strong>
+        </article>
+    </header>
+
+    <div class="aho-api-grid">
+        <article class="aho-api-panel aho-api-create">
+            <header class="aho-api-panel__header">
+                <div>
+                    <span>{{ 'API tokens'|aho_ui_label }}</span>
+                    <h3>{{ 'Create token'|aho_ui_label }}</h3>
+                </div>
+            </header>
+            <form method="post" class="aho-api-create__form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                <label>
+                    <span>{{ 'User'|aho_ui_label }}</span>
+                    <input type="text" value="{{ request.user.get_username }}" readonly>
+                </label>
+                <button type="submit" class="aho-api-primary-btn">{{ 'Create token'|aho_ui_label }}</button>
+            </form>
+            {% if plain_token %}
+                <div class="aho-api-token-box">
+                    <span>{{ 'Token'|aho_ui_label }}</span>
+                    <code>{{ plain_token }}</code>
+                    <button type="button" data-aho-copy="{{ plain_token }}">{{ 'Copy'|aho_ui_label }}</button>
+                </div>
+            {% endif %}
+        </article>
+
+        <article class="aho-api-panel">
+            <header class="aho-api-panel__header">
+                <div>
+                    <span>{{ 'API tokens'|aho_ui_label }}</span>
+                    <h3>{{ 'Active tokens'|aho_ui_label }}</h3>
+                </div>
+                <label class="aho-api-search">
+                    <span class="sr-only">{{ 'Search'|aho_ui_label }}</span>
+                    <input type="search" placeholder="{{ 'Search'|aho_ui_label }}" data-aho-table-filter="#aho-token-table">
+                </label>
+            </header>
+            <div class="aho-api-table-wrap">
+                <table class="aho-api-table" id="aho-token-table">
+                    <thead>
+                        <tr>
+                            <th>{{ 'User'|aho_ui_label }}</th>
+                            <th>{{ 'Email'|aho_ui_label }}</th>
+                            <th>{{ 'Token'|aho_ui_label }}</th>
+                            <th>{{ 'Status'|aho_ui_label }}</th>
+                            <th>{{ 'Created'|aho_ui_label }}</th>
+                            <th>{{ 'Actions'|aho_ui_label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for token in tokens %}
+                            <tr>
+                                <td>{{ token.user.get_username }}</td>
+                                <td>{{ token.user.email|default:"-" }}</td>
+                                <td><code>{{ token.key|slice:":10" }}...</code></td>
+                                <td><span class="aho-status-badge aho-status-badge--approved">{{ 'Active'|aho_ui_label }}</span></td>
+                                <td>{{ token.created }}</td>
+                                <td>
+                                    <form method="post" class="aho-inline-action-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="revoke">
+                                        <input type="hidden" name="token_id" value="{{ token.pk }}">
+                                        <button type="submit" class="aho-inline-action aho-inline-action--danger">{{ 'Revoke'|aho_ui_label }}</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="aho-empty-cell">{{ 'No results found.'|aho_ui_label }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+
+    <article class="aho-api-panel">
+        <header class="aho-api-panel__header">
+            <div>
+                <span>{{ api_root }}</span>
+                <h3>{{ 'API documentation'|aho_ui_label }}</h3>
+            </div>
+            <label class="aho-api-search">
+                <span class="sr-only">{{ 'Search'|aho_ui_label }}</span>
+                <input type="search" placeholder="{{ 'Search'|aho_ui_label }}" data-aho-table-filter="#aho-endpoint-table">
+            </label>
+        </header>
+        <div class="aho-api-table-wrap">
+            <table class="aho-api-table" id="aho-endpoint-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'Method'|aho_ui_label }}</th>
+                        <th>{{ 'Endpoint'|aho_ui_label }}</th>
+                        <th>{{ 'Description'|aho_ui_label }}</th>
+                        <th>{{ 'Scope'|aho_ui_label }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for endpoint in endpoints %}
+                        <tr>
+                            <td><span class="aho-api-method">{{ endpoint.method }}</span></td>
+                            <td><code>{{ endpoint.path }}</code></td>
+                            <td>{{ endpoint.label }}</td>
+                            <td>{{ endpoint.scope }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="aho-api-panel">
+        <header class="aho-api-panel__header">
+            <div>
+                <span>{{ 'Examples'|aho_ui_label }}</span>
+                <h3>cURL</h3>
+            </div>
+        </header>
+        <div class="aho-api-examples">
+            <div>
+                <span>GET</span>
+                <pre><code>{{ curl_get }}</code></pre>
+                <button type="button" data-aho-copy="{{ curl_get }}">{{ 'Copy'|aho_ui_label }}</button>
+            </div>
+            <div>
+                <span>POST</span>
+                <pre><code>{{ curl_post }}</code></pre>
+                <button type="button" data-aho-copy="{{ curl_post }}">{{ 'Copy'|aho_ui_label }}</button>
+            </div>
+        </div>
+    </article>
+</section>
+{% endblock %}

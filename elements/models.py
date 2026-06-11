@@ -5,6 +5,7 @@ from django.utils import timezone
 import datetime
 from regions.models import StgLocation
 from authentication.models import CustomUser
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from parler.models import TranslatableModel,TranslatedFields
 from django.core.exceptions import ValidationError
@@ -47,8 +48,9 @@ class StgDataElement(TranslatableModel):
     # This method makes it possible to enter multi-records in the Tabular form without
     # returning the language code error! resolved on 10th August 2020
     def __str__(self):
+        language_code = (translation.get_language() or settings.LANGUAGE_CODE).split("-", 1)[0]
         return self.safe_translation_getter(
-            'name',any_language=True,language_code=settings.LANGUAGE_CODE)
+            'name', any_language=True, language_code=language_code)
 
 
 class FactDataElement(models.Model):

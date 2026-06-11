@@ -97,7 +97,8 @@ class FactIndicatorArchiveViewSet(viewsets.ModelViewSet):
 
 
 
-class IndicatorSearchView(AutocompleteJsonView): # this view controls display of loacations 
+class IndicatorSearchView(AutocompleteJsonView):
+    model_admin = None # this view controls display of loacations 
     def get_queryset(self):
         language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
         user = self.request.user.id

@@ -1,6 +1,25 @@
 {% extends "admin/base_site.html" %}
-{% load static %}
+{% load i18n static aho_admin %}
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "ahocss/container.css" %}" />{% endblock %}
+{% block branding %}
+    {% get_current_language as LANGUAGE_CODE %}
+    {% if LANGUAGE_CODE == 'fr' %}
+        <img src="{% static 'images/aho-logo-combined-fr-white.png' %}" alt="African Health Observatory" class="aho-topbar-brand__logo">
+    {% elif LANGUAGE_CODE == 'pt' %}
+        <img src="{% static 'images/aho-logo-combined-pt-white.png' %}" alt="African Health Observatory" class="aho-topbar-brand__logo">
+    {% else %}
+        <img src="{% static 'images/aho-logo-combined-en-white.png' %}" alt="African Health Observatory" class="aho-topbar-brand__logo">
+    {% endif %}
+    <div class="aho-topbar-brand__label">
+        <span class="aho-topbar-brand__app">{{ 'Data Capture Tool'|aho_ui_label }}</span>
+        {% if has_permission %}
+            <span class="aho-topbar-welcome">
+                <span class="aho-topbar-welcome__separator" aria-hidden="true">|</span>
+                <span class="aho-topbar-welcome__text">{{ 'Welcome'|aho_ui_label }}, {% firstof user.get_short_name user.get_username user.email %}</span>
+            </span>
+        {% endif %}
+    </div>
+{% endblock %}
 {% block pretitle %}
 {% endblock %}
 {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}

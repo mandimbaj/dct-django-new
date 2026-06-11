@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n aho_admin %}
+
+{% block bodyclass %}{{ block.super }} dashboard aho-dashboard-page{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    {% aho_dashboard as dashboard %}
+
+    <section class="aho-dashboard-heading" aria-label="{{ 'Dashboard'|aho_ui_label }}">
+        <h1>{{ 'Dashboard'|aho_ui_label }}</h1>
+    </section>
+
+    <section class="aho-dashboard-stats" aria-label="Dashboard summary">
+        {% for card in dashboard.cards %}
+            <article class="aho-stat-card">
+                <div class="aho-stat-card__label">{{ card.label }}</div>
+                <div class="aho-stat-card__value">{{ card.value }}</div>
+                <div class="aho-stat-card__description">{{ card.description }}</div>
+            </article>
+        {% endfor %}
+    </section>
+
+    <section class="aho-dashboard-charts" aria-label="Dashboard charts">
+        {% for chart in dashboard.charts %}
+            <article class="aho-chart-card">
+                <header class="aho-chart-card__header">
+                    <h2>{{ chart.title }}</h2>
+                </header>
+
+                {% if chart.rows %}
+                    <div class="aho-chart-bars">
+                        {% for row in chart.rows %}
+                            <div class="aho-chart-row">
+                                <div class="aho-chart-row__label">
+                                    <span>{{ row.label }}</span>
+                                    {% if row.meta %}<small>{{ row.meta }}</small>{% endif %}
+                                </div>
+                                <div class="aho-chart-row__track">
+                                    <span class="aho-chart-row__bar" style="--aho-bar: {{ row.bar|default:row.value }}%;"></span>
+                                </div>
+                                <strong class="aho-chart-row__value">{{ row.value }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="aho-chart-card__empty">{{ 'No data available yet.'|aho_ui_label }}</div>
+                {% endif %}
+            </article>
+        {% endfor %}
+    </section>
+{% endblock %}

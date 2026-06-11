@@ -9,7 +9,7 @@ from admin_menu.templatetags import custom_admin_menu
 from import_export.admin import (ImportExportModelAdmin, ExportActionModelAdmin,
     ExportMixin,ImportMixin,ExportActionModelAdmin,ImportExportActionModelAdmin) #added exportaction mixin only
 from import_export.formats import base_formats
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 # Customize the site admin header for login, title bar, and data admin form section.
 class AdminSite(AdminSite):
     site_header = 'African Health Observatory' #also shown on login form
@@ -190,7 +190,7 @@ def get_app_list(context, order=True):
     app_list = list(app_dict.values())
     
     if order:
-        app_list.sort(key=lambda x: ordering[x['name']])
+        app_list.sort(key=lambda x: ordering.get(x['name'], 999))
         # Sort the models alphabetically within each app.
         for app in app_list:
             app['models'].sort(key=lambda x: x['name'])

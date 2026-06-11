@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load i18n aho_admin %}
+
+{% block bodyclass %}{{ block.super }} aho-custom-table-page{% endblock %}
+
+{% block content %}
+<section class="aho-resource-page">
+    {% if subtitle %}
+        <p class="aho-resource-page__subtitle">{{ subtitle }}</p>
+    {% endif %}
+
+    {% if metrics %}
+        <div class="aho-resource-metrics" aria-label="{% trans 'Summary' %}">
+            {% for metric in metrics %}
+                <article class="aho-resource-metric">
+                    <span>{{ metric.label }}</span>
+                    <strong>{{ metric.value }}</strong>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="aho-laravel-table-card" data-aho-client-table>
+        <div class="aho-laravel-table-card__toolbar aho-filament-table-toolbar" data-aho-table-toolbar>
+            <div class="aho-table-toolbar__left">
+                <button type="button" class="aho-table-export-btn" data-aho-export-table title="{{ 'Download CSV'|aho_ui_label }}">
+                    <span class="aho-table-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 3v9"></path>
+                            <path d="m6.5 8.5 3.5 3.5 3.5-3.5"></path>
+                            <path d="M4 15.5h12"></path>
+                        </svg>
+                    </span>
+                    {{ 'Export'|aho_ui_label }}
+                </button>
+            </div>
+            <div class="aho-table-toolbar__right">
+                <label class="aho-table-search">
+                    <span class="aho-table-search__icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="9" r="5"></circle>
+                            <path d="m13 13 3.5 3.5"></path>
+                        </svg>
+                    </span>
+                    <input type="search" placeholder="{{ 'Search'|aho_ui_label }}">
+                </label>
+                <button type="button" class="aho-filament-filter-btn aho-filament-filter-btn--icon" data-aho-client-filter title="{{ 'Filter'|aho_ui_label }}">
+                    <span class="aho-filter-btn__icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 5h14"></path>
+                            <path d="M6 10h8"></path>
+                            <path d="M8 15h4"></path>
+                        </svg>
+                    </span>
+                    <span class="aho-filter-btn__count">0</span>
+                </button>
+                <button type="button" class="aho-columns-btn" data-aho-columns-toggle title="{{ 'Toggle columns'|aho_ui_label }}">
+                    <span class="aho-table-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <rect x="3" y="4" width="4" height="12" rx="1"></rect>
+                            <rect x="8" y="4" width="4" height="12" rx="1"></rect>
+                            <rect x="13" y="4" width="4" height="12" rx="1"></rect>
+                        </svg>
+                    </span>
+                    <span class="sr-only">{{ 'Columns'|aho_ui_label }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="aho-laravel-table-card__scroll">
+            <table class="aho-laravel-table">
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th scope="col" data-sort-key="{{ header.key }}">{{ header.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for header in headers %}
+                                <td>{{ row|get_item:header.key|default:"-" }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{{ headers|length }}" class="aho-empty-cell">
+                                {{ 'No results found.'|aho_ui_label }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="aho-filament-pagination aho-client-pagination" data-aho-client-pagination data-page-size="25">
+            <span class="aho-client-pagination__summary" data-aho-page-summary></span>
+            <div class="aho-client-pagination__controls">
+                <button type="button" class="aho-client-pagination__btn" data-aho-page-prev>
+                    {{ 'Previous'|aho_ui_label }}
+                </button>
+                <span class="aho-client-pagination__pages">
+                    <span data-aho-page-current>1</span>/<span data-aho-page-total>1</span>
+                </span>
+                <button type="button" class="aho-client-pagination__btn" data-aho-page-next>
+                    {{ 'Next'|aho_ui_label }}
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

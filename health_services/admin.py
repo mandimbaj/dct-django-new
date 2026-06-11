@@ -109,7 +109,7 @@ class GroupedModelChoiceField(ModelChoiceField):
         if hasattr(self, '_choices'):
             return self._choices
         return GroupedModelChoiceIterator(self)
-    choices = property(_get_choices, ModelChoiceField._set_choices)
+    choices = property(_get_choices, ModelChoiceField.choices.fset)
 
 
 class HealthServicesProxyForm(forms.ModelForm):
@@ -402,7 +402,7 @@ class HealthServicesFactAdmin(ExportActionModelAdmin,OverideExport):
     #This field needed for controlled approval of resource before ETL process
     readonly_fields=('comment',)
 
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved,transition_to_rejected,]
 
 

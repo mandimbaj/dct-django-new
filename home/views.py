@@ -79,7 +79,8 @@ class StgMeasuremethodViewSet(viewsets.ModelViewSet):
             translations__language_code=language).order_by(
             'translations__name').distinct()
 
-class DataourceSearchView(AutocompleteJsonView): # this view controls display of loacations 
+class DataourceSearchView(AutocompleteJsonView):
+    model_admin = None # this view controls display of loacations 
     def get_queryset(self):
         language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
         user = self.request.user.id
@@ -101,7 +102,8 @@ class DataourceSearchView(AutocompleteJsonView): # this view controls display of
 
 
 
-class CategoryOptionSearchView(AutocompleteJsonView): # this view controls display of loacations 
+class CategoryOptionSearchView(AutocompleteJsonView):
+    model_admin = None # this view controls display of loacations 
     def get_queryset(self):
         language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
         user = self.request.user.id

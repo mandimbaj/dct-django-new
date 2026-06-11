@@ -1,0 +1,252 @@
+{% extends "admin/base_site.html" %}
+{% load i18n aho_admin %}
+
+{% block bodyclass %}{{ block.super }} aho-quality-admin-page{% endblock %}
+
+{% block content %}
+<div class="aho-quality" data-quality-page>
+    <section class="aho-quality__hero">
+        <div>
+            <p class="aho-quality__eyebrow">{{ 'Data quality'|aho_ui_label }}</p>
+            <h2 class="aho-quality__title">{{ 'Indicator value controls'|aho_ui_label }}</h2>
+            <p class="aho-quality__subtitle">{{ 'Review records that may need correction before approval or publication.'|aho_ui_label }}</p>
+        </div>
+
+        <div class="aho-quality__sample">
+            <span>{{ 'Checked sample'|aho_ui_label }}</span>
+            <strong>{{ summary.checked }}</strong>
+        </div>
+    </section>
+
+    <section class="aho-quality__stats" aria-label="{{ 'Quality filters'|aho_ui_label }}">
+        <button type="button" class="aho-quality-stat is-active" data-quality-filter="all">
+            <span>{{ 'All alerts'|aho_ui_label }}</span>
+            <strong>{{ total_issues }}</strong>
+        </button>
+
+        <button type="button" class="aho-quality-stat aho-quality-stat--error" data-quality-filter="error">
+            <span>{{ 'Errors'|aho_ui_label }}</span>
+            <strong>{{ summary.errors }}</strong>
+        </button>
+
+        <button type="button" class="aho-quality-stat aho-quality-stat--warning" data-quality-filter="warning">
+            <span>{{ 'Warnings'|aho_ui_label }}</span>
+            <strong>{{ summary.warnings }}</strong>
+        </button>
+    </section>
+
+    <section class="aho-quality-panel">
+        <header class="aho-quality-panel__header">
+            <div>
+                <h3>{{ 'Latest quality alerts'|aho_ui_label }}</h3>
+                <p>{{ 'Filter by severity or search by indicator, country, period, value, rule, or message.'|aho_ui_label }}</p>
+            </div>
+
+            <div class="aho-quality-search">
+                <label class="sr-only" for="quality-search">{{ 'Search in quality issues...'|aho_ui_label }}</label>
+                <input
+                    type="search"
+                    id="quality-search"
+                    data-quality-search
+                    autocomplete="off"
+                    placeholder="{{ 'Search in quality issues...'|aho_ui_label }}"
+                >
+                <button type="button" data-quality-clear>{{ 'Clear'|aho_ui_label }}</button>
+            </div>
+        </header>
+
+        <div class="aho-quality-panel__meta">
+            <span data-quality-count>{{ issues|length }} {{ 'results displayed'|aho_ui_label }}</span>
+            <span>{{ 'The table shows the latest detected issues first.'|aho_ui_label }}</span>
+        </div>
+
+        <div class="aho-quality-table-wrap">
+            <table class="aho-quality-table" id="quality-table">
+                <thead>
+                    <tr>
+                        <th>{% trans 'ID' %}</th>
+                        <th>{{ 'Severity'|aho_ui_label }}</th>
+                        <th>{{ 'Rule'|aho_ui_label }}</th>
+                        <th>{% trans 'Indicator' %}</th>
+                        <th>{% trans 'Location' %}</th>
+                        <th>{% trans 'Period' %}</th>
+                        <th>{% trans 'Value' %}</th>
+                        <th>{{ 'Message'|aho_ui_label }}</th>
+                        <th>{{ 'Correct'|aho_ui_label }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                        <tr
+                            class="quality-row"
+                            data-severity="{{ issue.severity }}"
+                            data-quality-text="{{ issue.search_text }}"
+                        >
+                            <td class="aho-quality-table__id">
+                                <a href="{{ issue.edit_url }}" class="aho-quality-link">#{{ issue.fact_id }}</a>
+                            </td>
+                            <td>
+                                <span class="aho-quality-badge aho-quality-badge--{{ issue.severity }}">
+                                    {% if issue.severity == 'error' %}{{ 'Error'|aho_ui_label }}{% else %}{{ 'Warning'|aho_ui_label }}{% endif %}
+                                </span>
+                            </td>
+                            <td class="aho-quality-table__rule">{{ issue.rule_label }}</td>
+                            <td class="aho-quality-table__indicator">{{ issue.indicator }}</td>
+                            <td>{{ issue.location }}</td>
+                            <td>{{ issue.period }}</td>
+                            <td>{{ issue.value }}</td>
+                            <td class="aho-quality-table__message">{{ issue.message }}</td>
+                            <td>
+                                <a href="{{ issue.edit_url }}" class="aho-quality-link">
+                                    {{ 'Correct'|aho_ui_label }}
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="aho-quality-empty">{{ 'No issue found in the latest checked records.'|aho_ui_label }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    <tr class="aho-quality-empty" data-quality-empty hidden>
+                        <td colspan="9">{{ 'No alert matches the current filter.'|aho_ui_label }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="aho-filament-pagination aho-client-pagination" data-quality-pagination data-page-size="25">
+            <span class="aho-client-pagination__summary" data-quality-page-summary></span>
+            <div class="aho-client-pagination__controls">
+                <button type="button" class="aho-client-pagination__btn" data-quality-page-prev>
+                    {{ 'Previous'|aho_ui_label }}
+                </button>
+                <span class="aho-client-pagination__pages">
+                    <span data-quality-page-current>1</span>/<span data-quality-page-total>1</span>
+                </span>
+                <button type="button" class="aho-client-pagination__btn" data-quality-page-next>
+                    {{ 'Next'|aho_ui_label }}
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    (function () {
+        var page = document.querySelector('[data-quality-page]');
+        if (!page || page.dataset.ready === '1') {
+            return;
+        }
+        page.dataset.ready = '1';
+
+        var searchInput = page.querySelector('[data-quality-search]');
+        var clearButton = page.querySelector('[data-quality-clear]');
+        var countLabel = page.querySelector('[data-quality-count]');
+        var emptyRow = page.querySelector('[data-quality-empty]');
+        var filterButtons = Array.prototype.slice.call(page.querySelectorAll('[data-quality-filter]'));
+        var rows = Array.prototype.slice.call(page.querySelectorAll('.quality-row'));
+        var pagination = page.querySelector('[data-quality-pagination]');
+        var pageSize = parseInt(pagination ? pagination.getAttribute('data-page-size') || '25' : '25', 10);
+        var currentPage = 1;
+        var activeSeverity = 'all';
+        var singular = "{{ 'result displayed'|aho_ui_label|escapejs }}";
+        var plural = "{{ 'results displayed'|aho_ui_label|escapejs }}";
+
+        function matchingRows() {
+            var term = (searchInput ? searchInput.value : '').trim().toLowerCase();
+            return rows.filter(function (row) {
+                var matchesSeverity = activeSeverity === 'all' || row.dataset.severity === activeSeverity;
+                var matchesSearch = term === '' || (row.dataset.qualityText || row.textContent.toLowerCase()).indexOf(term) !== -1;
+                return matchesSeverity && matchesSearch;
+            });
+        }
+
+        function render(resetPage) {
+            var visibleRows = matchingRows();
+            var totalPages = Math.max(1, Math.ceil(visibleRows.length / pageSize));
+            if (resetPage) {
+                currentPage = 1;
+            }
+            currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+            rows.forEach(function (row) {
+                var visibleIndex = visibleRows.indexOf(row);
+                row.hidden = visibleIndex === -1 || visibleIndex < (currentPage - 1) * pageSize || visibleIndex >= currentPage * pageSize;
+            });
+
+            if (emptyRow) {
+                emptyRow.hidden = visibleRows.length !== 0 || rows.length === 0;
+            }
+            if (countLabel) {
+                countLabel.textContent = visibleRows.length + ' ' + (visibleRows.length === 1 ? singular : plural);
+            }
+            if (pagination) {
+                pagination.hidden = rows.length <= pageSize;
+                var summary = pagination.querySelector('[data-quality-page-summary]');
+                var current = pagination.querySelector('[data-quality-page-current]');
+                var total = pagination.querySelector('[data-quality-page-total]');
+                var previous = pagination.querySelector('[data-quality-page-prev]');
+                var next = pagination.querySelector('[data-quality-page-next]');
+                if (summary) {
+                    summary.textContent = visibleRows.length + ' ' + (visibleRows.length === 1 ? singular : plural);
+                }
+                if (current) {
+                    current.textContent = currentPage;
+                }
+                if (total) {
+                    total.textContent = totalPages;
+                }
+                if (previous) {
+                    previous.disabled = currentPage <= 1;
+                }
+                if (next) {
+                    next.disabled = currentPage >= totalPages;
+                }
+            }
+        }
+
+        filterButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                activeSeverity = button.dataset.qualityFilter || 'all';
+                filterButtons.forEach(function (candidate) {
+                    candidate.classList.toggle('is-active', candidate === button);
+                });
+                render(true);
+            });
+        });
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                render(true);
+            });
+        }
+        if (clearButton) {
+            clearButton.addEventListener('click', function () {
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.focus();
+                }
+                render(true);
+            });
+        }
+        if (pagination) {
+            var previous = pagination.querySelector('[data-quality-page-prev]');
+            var next = pagination.querySelector('[data-quality-page-next]');
+            if (previous) {
+                previous.addEventListener('click', function () {
+                    currentPage -= 1;
+                    render(false);
+                });
+            }
+            if (next) {
+                next.addEventListener('click', function () {
+                    currentPage += 1;
+                    render(false);
+                });
+            }
+        }
+
+        render(false);
+    })();
+</script>
+{% endblock %}

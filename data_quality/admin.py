@@ -82,7 +82,7 @@ class GroupedModelChoiceField(ModelChoiceField):
         if hasattr(self, '_choices'):
             return self._choices
         return GroupedModelChoiceIterator(self)
-    choices = property(_get_choices, ModelChoiceField._set_choices)
+    choices = property(_get_choices, ModelChoiceField.choices.fset)
 
 
 @admin.register(Facts_DataFilter)
@@ -145,9 +145,7 @@ class Facts_DataFrameAdmin(OverideExport):
 
     def get_queryset(self, request):
         language = request.LANGUAGE_CODE
-        qs = super().get_queryset(request).filter(
-            language_code=language,
-        ).distinct()
+        qs = super().get_queryset(request).distinct()
         groups = list(request.user.groups.values_list(
             'user', flat=True))
         user = request.user.id  
@@ -234,7 +232,7 @@ class MeasureTypeAdmin(OverideExport):
             indicator__translations__language_code=language).order_by(
             'indicator__translations__name').filter(
             measure_type__translations__language_code=language).order_by(
-            'measure_type___translations__name').distinct()
+            'measure_type__translations__name').distinct()
         
         if request.user.is_superuser:
             qs
@@ -294,7 +292,7 @@ class DatasourceAdmin(OverideExport):
             indicator__translations__language_code=language).order_by(
             'indicator__translations__name').filter(
             datasource__translations__language_code=language).order_by(
-            'datasource___translations__name').distinct()
+            'datasource__translations__name').distinct()
         
         # import pdb; pdb.set_trace()
         if request.user.is_superuser:
@@ -352,7 +350,7 @@ class categoryOptionAdmin(OverideExport):
             indicator__translations__language_code=language).order_by(
             'indicator__translations__name').filter(
             categoryoption__translations__language_code=language).order_by(
-            'categoryoption___translations__name').distinct()
+            'categoryoption__translations__name').distinct()
 
         # import pdb; pdb.set_trace()
         if request.user.is_superuser:

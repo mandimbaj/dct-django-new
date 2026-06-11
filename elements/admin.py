@@ -92,7 +92,7 @@ class GroupedModelChoiceField(ModelChoiceField):
         if hasattr(self, '_choices'):
             return self._choices
         return GroupedModelChoiceIterator(self)
-    choices = property(_get_choices, ModelChoiceField._set_choices)
+    choices = property(_get_choices, ModelChoiceField.choices.fset)
 
 
 @admin.register(StgDataElement)
@@ -321,7 +321,7 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
         return obj.get_comment_display()
     get_status.short_description = 'Status'
     
-    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+    actions = list(ExportActionModelAdmin.actions) + [transition_to_pending,
         transition_to_approved, transition_to_rejected]
 
     """
