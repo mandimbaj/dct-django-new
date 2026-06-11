@@ -61,3 +61,13 @@ jobs:
           slot-name: new
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NEW }}
           package: ./app
+
+      - name: Debug files
+        run: |
+          echo "=== Racine du repo ==="
+          ls -la
+          echo "=== Recherche manage.py ==="
+          find . -name "manage.py"
+          echo "=== Contenu du zip ==="
+          zip -r release.zip . --exclude "*.git*" --exclude "__pycache__/*" --exclude "*.pyc" --exclude "*.zip"
+          unzip -l release.zip | head -50  
