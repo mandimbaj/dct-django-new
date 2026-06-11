@@ -48,14 +48,10 @@ jobs:
         with:
           name: python-app
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: af-aho-datacapturetool
-          slot-name: stagex
+          slot-name: new
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NEW }}
           package: release.zip
