@@ -27,7 +27,7 @@ xlrd==2.0.1 #upgraded xlrd to support pandas excel reading to_excel
 # data science and form packages
 fuzzywuzzy # string matching algorithm
 python-Levenshtein # helper lib for fuzzywuz
-pandas==1.4.3
+pandas==2.0.0
 matplotlib==3.5.3
 numpy==1.23.2
 django-pandas==0.6.6
