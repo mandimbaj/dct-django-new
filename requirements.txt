@@ -16,7 +16,7 @@ django-crispy-forms==1.14.0
 # data-wizard<2.0.0 # verson 2.0.0 user conflicts with home user inheritance
 git+https://github.com/ahoazure/aho_data_import_wizard.git@main # translated into fr and pt
 msal<=1.9.0 #library needed for OIDC
-mysqlclient<=2.0.1
+mysqlclient<=2.1.0
 Pillow>=6.0.0
 python-dotenv<=0.17.1
 pytz>=2018.5
