@@ -303,10 +303,8 @@ These model classes inherits from data_wizard sources package.The purpose of
 inheriting the models is to add location field to the sources database tables
 """
 class FileSource(Filesources):
-    location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        verbose_name = _('Location Name'),)
-    user = models.ForeignKey(CustomUser, models.PROTECT,
-        verbose_name='User Name (Email)') # request helper field
+    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
+        verbose_name=_('Location Name'),)
     url = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
@@ -315,20 +313,13 @@ class FileSource(Filesources):
         verbose_name_plural = _('Import via File..')
         ordering = ('location',)
 
-    """
-    This method appends the relative filename path to Azure blob url before save
-    """
     def get_fileurl(self):
-        base_url=f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/'
+        base_url = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/'
         file_name = self.file.name
-        if self.url is None or self.url =='':
-            return (base_url+'datawizard/'+file_name)
-        return (base_url+'datawizard/'+file_name)
+        if self.url is None or self.url == '':
+            return (base_url + 'datawizard/' + file_name)
+        return (base_url + 'datawizard/' + file_name)
 
-    """
-    This method overrides the save method to store the derived field into database.
-    Note that the last line calls the super class to save the URL value
-    """
     def save(self, *args, **kwargs):
         self.url = self.get_fileurl()
         super(FileSource, self).save(*args, **kwargs)
@@ -338,12 +329,10 @@ class FileSource(Filesources):
 
 
 class URLSource(URLsources):
-    location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        verbose_name = _('Location Name'),)
-    user = models.ForeignKey(CustomUser, models.PROTECT,
-        verbose_name='User Name (Email)') # request helper field
+    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
+        verbose_name=_('Location Name'),)
     file = models.ForeignKey(FileSource, on_delete=models.CASCADE,
-            related_name="link",verbose_name=_('File'))
+        related_name="link", verbose_name=_('File'))
 
     class Meta:
         managed = True
@@ -352,7 +341,7 @@ class URLSource(URLsources):
         ordering = ('location',)
 
     def get_url(self):
-        if self.url is None or self.url =='':
+        if self.url is None or self.url == '':
             return self.file.url
         return self.file.url
 
