@@ -14,6 +14,7 @@ gunicorn==23.0.0
 django-admin-menu
 django-modeladmin-reorder
 django-parler
+django-parler-rest
 django-smart-selects
 django-import-export
 django-admin-list-filter-dropdown
@@ -27,3 +28,14 @@ msal
 Pillow
 pandas
 django-pandas
+numpy
+scipy
+matplotlib
+seaborn
+statsmodels
+fuzzywuzzy
+python-Levenshtein
+xlrd
+tablib[all]
+django-storages[azure]
+SQLAlchemy
