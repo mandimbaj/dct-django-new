@@ -1,9 +1,9 @@
-Django>2.2,<=3.0.14 #checkout azure supported version
+Django>2.2,<=3.0.14
 django-import-export
 djangorestframework
 djangorestframework-simplejwt
-django-admin-list-filter-dropdown==1.0.3 # to be replaced by line 6
-django-admin-autocomplete-filter<=0.7.1 # to replace line 
+django-admin-list-filter-dropdown==1.0.3
+django-admin-autocomplete-filter<=0.7.1
 django-rest-swagger==2.2.0
 django-parler
 django-parler-rest
@@ -11,28 +11,25 @@ django-modeladmin-reorder
 django-bootstrap-datepicker-plus==3.0.5
 django-smart-selects<=1.5.9
 django-storages[azure]
-django-admin-menu<=1.5 #checkout stable version
+django-admin-menu<=1.5
 django-crispy-forms==1.14.0
-# data-wizard<2.0.0 # verson 2.0.0 user conflicts with home user inheritance
-git+https://github.com/ahoazure/aho_data_import_wizard.git@main # translated into fr and pt
-msal<=1.9.0 #library needed for OIDC
-mysqlclient<=2.1.0
-Pillow>=6.0.0
+git+https://github.com/ahoazure/aho_data_import_wizard.git@main
+msal<=1.9.0
+mysqlclient>=2.1.0
+Pillow>=9.0.0
 python-dotenv<=0.17.1
 pytz>=2018.5
 tablib[all]
 whitenoise
-xlrd==2.0.1 #upgraded xlrd to support pandas excel reading to_excel
-
-# data science and form packages
-fuzzywuzzy # string matching algorithm
-python-Levenshtein # helper lib for fuzzywuz
-pandas==2.0.0
-matplotlib==3.5.3
-numpy==1.23.2
+xlrd==2.0.1
+fuzzywuzzy
+python-Levenshtein
+pandas>=2.0.3
+matplotlib>=3.7.0
+numpy>=1.24.0
 django-pandas==0.6.6
-seaborn==0.11.2
-scipy==1.9.0
-django-crispy-forms==1.14.0
-SQLAlchemy<=1.4.40
-statsmodels<=0.13.2
+seaborn>=0.12.0
+scipy>=1.10.0
+SQLAlchemy>=1.4.40,<2.0.0
+statsmodels>=0.13.5
+setuptools
