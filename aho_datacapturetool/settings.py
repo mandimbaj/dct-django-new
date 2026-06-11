@@ -21,6 +21,7 @@ DEBUG = True # Debug must be set to False in production for security purposes
 ALLOWED_HOSTS = ['localhost','127.0.0.1','dct.aho.afro.who.int',
                 'af-aho-datacapturetool.azurewebsites.net',
                 'af-aho-datacapturetool-stage.azurewebsites.net',
+				 'af-aho-datacapturetool-stagex.azurewebsites.net',
                 'f54e-196-216-86-84.ngrok-free.app']
 
 # Application definition
