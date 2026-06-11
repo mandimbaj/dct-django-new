@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+import pymysql
+pymysql.install_as_MySQLdb()
 
 if __name__ == '__main__':
     if os.environ.get('DJANGO_ENV') == 'production':
