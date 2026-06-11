@@ -2,7 +2,7 @@ from .settings import *
 DEBUG = True # Swich off debug for security reasons
 # Configure production domain names
 ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
-    'af-aho-datacapturetool-stage.azurewebsites.net',
+    'af-aho-datacapturetool-stagex.azurewebsites.net',
         'dct.aho.afro.who.int'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
