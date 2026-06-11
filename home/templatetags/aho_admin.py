@@ -110,6 +110,17 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Columns": "Colonnes",
         "Toggle columns": "Afficher ou masquer les colonnes",
         "Download CSV": "Telecharger CSV",
+        "Import data": "Importer les donnees",
+        "Import indicator data": "Importer les donnees indicateurs",
+        "Choose file": "Choisir un fichier",
+        "Selected file": "Fichier selectionne",
+        "No file selected": "Aucun fichier selectionne",
+        "Download template": "Telecharger le modele",
+        "Indicator import template": "Modele d'import indicateurs",
+        "Continue to import wizard": "Continuer vers l'assistant d'import",
+        "Close": "Fermer",
+        "Rows per page": "Lignes par page",
+        "Use the CSV model below, then continue to the import wizard to upload and validate the file.": "Utilisez le modele CSV ci-dessous, puis continuez vers l'assistant d'import pour charger et valider le fichier.",
         "Provider": "Fournisseur",
         "Method": "Methode",
         "Server name": "Nom du serveur",
@@ -361,6 +372,17 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Columns": "Colunas",
         "Toggle columns": "Mostrar ou ocultar colunas",
         "Download CSV": "Transferir CSV",
+        "Import data": "Importar dados",
+        "Import indicator data": "Importar dados dos indicadores",
+        "Choose file": "Escolher ficheiro",
+        "Selected file": "Ficheiro selecionado",
+        "No file selected": "Nenhum ficheiro selecionado",
+        "Download template": "Transferir modelo",
+        "Indicator import template": "Modelo de importacao de indicadores",
+        "Continue to import wizard": "Continuar para o assistente de importacao",
+        "Close": "Fechar",
+        "Rows per page": "Linhas por pagina",
+        "Use the CSV model below, then continue to the import wizard to upload and validate the file.": "Use o modelo CSV abaixo e continue para o assistente de importacao para carregar e validar o ficheiro.",
         "Provider": "Fornecedor",
         "Method": "Metodo",
         "Server name": "Nome do servidor",
@@ -843,6 +865,37 @@ def aho_laravel_menu(context: dict[str, Any]) -> list[dict[str, Any]]:
         )
 
     return menu
+
+
+@register.simple_tag(takes_context=True)
+def aho_breadcrumb_trail(context: dict[str, Any], title: str = "") -> list[dict[str, str | None]]:
+    """Build the page path from the Laravel-like menu shown in the sidebar."""
+    try:
+        home_url = reverse("admin:index")
+    except NoReverseMatch:
+        home_url = None
+
+    crumbs: list[dict[str, str | None]] = [{"label": _ui_label("Home"), "url": home_url}]
+
+    for section in aho_laravel_menu(context):
+        if not section.get("active") or not section.get("groups"):
+            continue
+
+        crumbs.append({"label": section["label"], "url": section.get("url")})
+        for group in section.get("groups", []):
+            active_item = next((item for item in group.get("items", []) if item.get("active")), None)
+            if not active_item:
+                continue
+            if group.get("label"):
+                crumbs.append({"label": group["label"], "url": None})
+            crumbs.append({"label": active_item["label"], "url": active_item.get("url")})
+            return crumbs
+        return crumbs
+
+    title_text = str(title or "").strip()
+    if title_text and title_text != crumbs[-1]["label"]:
+        crumbs.append({"label": title_text, "url": None})
+    return crumbs
 
 
 @register.simple_tag(takes_context=True)

@@ -346,7 +346,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
                 'measuremethod__translations').only(
                 'location','indicator','categoryoption','datasource',
                 'measuremethod','user','value_received','period','comment',
-                'date_created','user__id','location__location_id',
+                'date_created','date_lastupdated','user__id','location__location_id',
                 'indicator__indicator_id','categoryoption__categoryoption_id',
                 'datasource__datasource_id','measuremethod__measuremethod_id',
                 'priority','string_value','indicator__afrocode','min_value',
@@ -470,6 +470,14 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     date_created.admin_order_field = 'date_created'
     date_created.short_description = 'Date Created'
 
+    # Show the last update date so users can audit recent changes from the table.
+    def date_modified(obj):
+        if not obj.date_lastupdated:
+            return ''
+        return obj.date_lastupdated.strftime("%d-%b-%Y")
+    date_modified.admin_order_field = 'date_lastupdated'
+    date_modified.short_description = 'Date Modified'
+
     # use a more descriptive approval status column name
     def get_status(self, obj):
         return obj.get_comment_display()
@@ -501,7 +509,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     # The list display includes a callable get_afrocode that returns indicator code
     list_display=('indicator','location', get_afrocode,'period',
                   'categoryoption','value_received','string_value',
-                  'datasource','get_status','priority',date_created,)
+                  'datasource','get_status','priority',date_created,date_modified,)
 
     search_fields = ('indicator__translations__name','location__translations__name',
         'period','indicator__afrocode','comment','priority') #display search field
@@ -515,6 +523,15 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     list_display_links = ('location',get_afrocode, 'indicator',)
 
     list_per_page = 50 #limit records displayed on admin site to 30
+
+    def get_list_per_page(self, request):
+        """Allow the Laravel-style page-size selector to control the list length."""
+        try:
+            requested_size = int(request.GET.get('per_page') or self.list_per_page)
+        except (TypeError, ValueError):
+            requested_size = self.list_per_page
+        return requested_size if requested_size in (10, 25, 50, 100, 250) else self.list_per_page
+
     #This field needed for controlled approval of resource before ETL process
     readonly_fields=('comment',)
 
