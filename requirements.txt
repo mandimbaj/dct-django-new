@@ -11,3 +11,17 @@ idna==3.11
 urllib3==2.5.0
 whitenoise==6.9.0
 gunicorn==23.0.0
+django-admin-menu
+django-modeladmin-reorder
+django-parler
+django-smart-selects
+django-import-export
+django-admin-list-filter-dropdown
+django-crispy-forms
+django-admin-autocomplete-filter
+djangorestframework
+django-rest-swagger
+djangorestframework-simplejwt
+data-wizard
+msal
+Pillow
