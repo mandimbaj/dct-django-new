@@ -13,7 +13,7 @@
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}">
     {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive_rtl.css" %}">{% endif %}
-    <link rel="stylesheet" type="text/css" href="{% static "ahocss/django-filament-preview.css" %}?v=20260611-10">
+    <link rel="stylesheet" type="text/css" href="{% static "ahocss/django-filament-preview.css" %}?v=20260624-1">
 {% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
 </head>
@@ -61,6 +61,22 @@
                 </span>
                 <input type="search" placeholder="{{ 'Search'|aho_ui_label }}..." aria-label="{{ 'Search'|aho_ui_label }}" autocomplete="off" data-aho-global-search data-aho-global-search-url="{% url 'aho_global_search' %}">
             </div>
+        {% endif %}
+
+        {% if has_permission %}
+            {% aho_country_identity as aho_country_identity %}
+            {% if aho_country_identity.flag_url %}
+                <img
+                    src="{{ aho_country_identity.flag_url }}"
+                    srcset="{{ aho_country_identity.flag_srcset }}"
+                    class="aho-topbar-country-flag"
+                    alt="{{ aho_country_identity.name }}"
+                    title="{{ aho_country_identity.name }}"
+                    width="40"
+                    height="27"
+                    decoding="async"
+                    referrerpolicy="no-referrer">
+            {% endif %}
         {% endif %}
 
         {% block usertools %}

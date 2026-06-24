@@ -19,6 +19,57 @@ from django.utils import timezone, translation
 register = template.Library()
 
 
+ISO3_TO_ISO2 = {
+    "AGO": "AO",
+    "BDI": "BI",
+    "BEN": "BJ",
+    "BFA": "BF",
+    "BWA": "BW",
+    "CAF": "CF",
+    "CIV": "CI",
+    "CMR": "CM",
+    "COD": "CD",
+    "COG": "CG",
+    "COM": "KM",
+    "CPV": "CV",
+    "DZA": "DZ",
+    "ERI": "ER",
+    "ETH": "ET",
+    "GAB": "GA",
+    "GHA": "GH",
+    "GIN": "GN",
+    "GMB": "GM",
+    "GNB": "GW",
+    "GNQ": "GQ",
+    "KEN": "KE",
+    "LBR": "LR",
+    "LSO": "LS",
+    "MDG": "MG",
+    "MLI": "ML",
+    "MOZ": "MZ",
+    "MRT": "MR",
+    "MUS": "MU",
+    "MWI": "MW",
+    "NAM": "NA",
+    "NER": "NE",
+    "NGA": "NG",
+    "RWA": "RW",
+    "SEN": "SN",
+    "SLE": "SL",
+    "SSD": "SS",
+    "STP": "ST",
+    "SWZ": "SZ",
+    "SYC": "SC",
+    "TCD": "TD",
+    "TGO": "TG",
+    "TZA": "TZ",
+    "UGA": "UG",
+    "ZAF": "ZA",
+    "ZMB": "ZM",
+    "ZWE": "ZW",
+}
+
+
 @register.filter
 def get_item(value: dict[str, Any], key: str) -> Any:
     if isinstance(value, dict):
@@ -29,6 +80,43 @@ def get_item(value: dict[str, Any], key: str) -> Any:
 @register.filter
 def aho_ui_label(value: str) -> str:
     return _ui_label(str(value))
+
+
+@register.simple_tag(takes_context=True)
+def aho_country_identity(context: dict[str, Any]) -> dict[str, str | None]:
+    request = context.get("request")
+    user = getattr(request, "user", None)
+    if not getattr(user, "is_authenticated", False):
+        return {"name": None, "iso": None, "flag_url": None, "flag_srcset": None}
+    if getattr(user, "is_superuser", False):
+        return {"name": _ui_label("African Region"), "iso": "AFRO", "flag_url": None, "flag_srcset": None}
+
+    location = getattr(user, "location", None)
+    iso = _iso2(getattr(location, "iso_alpha", ""))
+    name = str(location) if location else None
+    if not iso or iso == "AF":
+        return {"name": name, "iso": iso or None, "flag_url": None, "flag_srcset": None}
+    iso_lower = iso.lower()
+    return {
+        "name": name,
+        "iso": iso,
+        "flag_url": f"https://flagcdn.com/w40/{iso_lower}.png",
+        "flag_srcset": f"https://flagcdn.com/w80/{iso_lower}.png 2x",
+    }
+
+
+def _iso2(value: Any) -> str:
+    iso = "".join(character for character in str(value or "").upper() if character.isalpha())
+    if not iso:
+        return "AF"
+    if len(iso) == 2:
+        return iso
+    if iso in ISO3_TO_ISO2:
+        return ISO3_TO_ISO2[iso]
+    iso3 = iso[:3]
+    if iso3 in ISO3_TO_ISO2:
+        return ISO3_TO_ISO2[iso3]
+    return iso[:2] or "AF"
 
 
 UI_LABELS: dict[str, dict[str, str]] = {
@@ -98,6 +186,7 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Data elements": "Elements de donnees",
         "Publications": "Publications",
         "Locations": "Localisations",
+        "National observatory": "Observatoire national",
         "Data integration": "Integration des donnees",
         "Data quality": "Qualite des donnees",
         "API tokens": "Jetons API",
@@ -279,6 +368,7 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Token status": "Statut des jetons",
         "Users": "Utilisateurs",
         "Roles": "Roles",
+        "Roles & permissions": "Roles et permissions",
         "Permissions": "Permissions",
         "User history": "Historique utilisateur",
         "Values": "Valeurs",
@@ -366,6 +456,7 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Data elements": "Elementos de dados",
         "Publications": "Publicacoes",
         "Locations": "Localizacoes",
+        "National observatory": "Observatorio nacional",
         "Data integration": "Integracao de dados",
         "Data quality": "Qualidade dos dados",
         "API tokens": "Tokens API",
@@ -473,6 +564,7 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Data element values": "Valores dos elementos",
         "Knowledge products": "Produtos de conhecimento",
         "Connections": "Conexoes",
+        "National observatories": "Observatorios nacionais",
         "Failed rows": "Linhas com falha",
         "Indicator checks": "Verificacoes dos indicadores",
         "Indicator value controls": "Controlos dos valores dos indicadores",
@@ -508,6 +600,7 @@ UI_LABELS: dict[str, dict[str, str]] = {
         "Token status": "Estado dos tokens",
         "Users": "Utilizadores",
         "Roles": "Funcoes",
+        "Roles & permissions": "Funcoes e permissoes",
         "Permissions": "Permissoes",
         "User history": "Historico do utilizador",
         "Level 2 locations: {count}": "Localizacoes de nivel 2: {count}",
@@ -722,6 +815,17 @@ LARAVEL_MENU: list[dict[str, Any]] = [
                     _item("Economic blocks", "regions.StgEconomicZones"),
                     _item("Special categorizations", "regions.StgSpecialcategorization"),
                     _item("Dial codes", "regions.StgLocationCodes"),
+                ],
+            }
+        ],
+    },
+    {
+        "label": "National observatory",
+        "icon": "observatory",
+        "groups": [
+            {
+                "label": "References",
+                "items": [
                     _item("National observatories", "home.StgCustomNationalObservatory"),
                 ],
             }
@@ -760,6 +864,7 @@ LARAVEL_MENU: list[dict[str, Any]] = [
                     _item("Similarity scores", "data_quality.Similarity_Index"),
                     _item("Multiple measures", "data_quality.Mutiple_MeasureTypes"),
                     _item("Value type checks", "data_quality.DqaValueTypesConsistencyRemarks"),
+                    _item("Failed rows", url_name="aho_data_quality_failed_import_rows"),
                 ],
             }
         ],
@@ -782,8 +887,8 @@ LARAVEL_MENU: list[dict[str, Any]] = [
                 "label": "Authentication",
                 "items": [
                     _item("Users", "authentication.CustomUser"),
-                    _item("Roles", "authentication.CustomGroup"),
-                    _item("Permissions"),
+                    _item("Roles & permissions", "authentication.CustomGroup"),
+                    _item("Permissions", "auth.Permission"),
                     _item("User history", "authentication.AhodctUserLogs"),
                 ],
             }

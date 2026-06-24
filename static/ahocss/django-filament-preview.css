@@ -29,7 +29,7 @@
     --aho-sidebar-width: 14rem;
     --aho-subnav-width: 10rem;
     --aho-shell-offset: var(--aho-sidebar-width);
-    --aho-topbar-height: 60px;
+    --aho-topbar-height: 56px;
     --primary: var(--who-afro-blue);
     --secondary: var(--who-afro-blue-dark);
     --accent: var(--who-afro-blue);
@@ -724,6 +724,367 @@ body.aho-theme-dark .aho-django-subnav {
     left: 0.49rem;
     top: 0.38rem;
     width: 0.18rem;
+}
+
+/* Laravel Filament parity: compact topbar and Data integration resource pages. */
+:root {
+    --aho-topbar-height: 56px;
+}
+
+.aho-django-topbar,
+#header.aho-django-topbar {
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+}
+
+#header.aho-django-topbar .aho-topbar-brand__logo,
+.aho-django-topbar .aho-topbar-brand__logo,
+.aho-topbar-brand__logo {
+    align-self: center;
+    height: clamp(2.25rem, 8vw, 3.15rem) !important;
+    margin-bottom: 0;
+    max-height: 3.15rem !important;
+    max-width: clamp(11.5rem, 25vw, 18rem);
+    min-height: 0;
+    object-position: left center;
+}
+
+.aho-topbar-search {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    box-shadow: none;
+    flex: 0 1 auto;
+    left: 50%;
+    margin-left: 0;
+    min-height: 2.25rem;
+    min-width: 12rem;
+    padding: 0.35rem 0.8rem;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(30rem, 40vw);
+    z-index: 3;
+}
+
+.aho-topbar-search__icon {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.aho-topbar-search input {
+    color: white;
+}
+
+.aho-topbar-search input::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.aho-topbar-country-flag {
+    background: white;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 6%);
+    flex: 0 0 auto;
+    height: 1.35rem;
+    margin-inline: 0.25rem;
+    object-fit: cover;
+    width: 2rem;
+}
+
+.aho-primary-action,
+.aho-secondary-action {
+    align-items: center;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.8rem;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+.aho-primary-action {
+    background: var(--who-afro-blue);
+    border: 1px solid var(--who-afro-blue);
+    color: white !important;
+}
+
+.aho-primary-action:hover {
+    background: var(--who-afro-blue-hover);
+    border-color: var(--who-afro-blue-hover);
+}
+
+.aho-secondary-action {
+    background: white;
+    border: 1px solid var(--who-afro-panel-border);
+    color: var(--who-afro-blue-deep) !important;
+}
+
+.aho-secondary-action:hover {
+    background: #f0f4f8;
+}
+
+.aho-di-filter-form select,
+.aho-di-field input,
+.aho-di-field select,
+.aho-di-field textarea {
+    background: white;
+    border: 1px solid var(--who-afro-panel-border);
+    border-radius: 6px;
+    color: var(--who-afro-ink);
+    font: inherit;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.65rem;
+    width: 100%;
+}
+
+.aho-di-filter-form select {
+    min-width: 8rem;
+    width: auto;
+}
+
+.aho-di-table td {
+    vertical-align: top;
+}
+
+.aho-di-url {
+    max-width: 18rem;
+    overflow-wrap: anywhere;
+}
+
+.aho-di-actions-cell {
+    min-width: 18rem;
+}
+
+.aho-data-pill {
+    align-items: center;
+    background: #eef6fb;
+    border: 1px solid #d6eaf5;
+    border-radius: 999px;
+    color: var(--who-afro-blue-deep);
+    display: inline-flex;
+    font-size: 0.74rem;
+    font-weight: 800;
+    line-height: 1;
+    min-height: 1.45rem;
+    padding: 0.28rem 0.55rem;
+    white-space: nowrap;
+}
+
+.aho-data-pill--ready,
+.aho-status-badge--ready,
+.aho-status-badge--active {
+    background: var(--who-afro-success-bg);
+    border-color: #b7e4cc;
+    color: var(--who-afro-success-color);
+}
+
+.aho-data-pill--warning,
+.aho-status-badge--missing,
+.aho-status-badge--draft,
+.aho-status-badge--paused {
+    background: var(--who-afro-warning-bg);
+    border-color: #fedf89;
+    color: var(--who-afro-warning-color);
+}
+
+.aho-status-badge--error {
+    background: var(--who-afro-error-bg);
+    border-color: #fecdca;
+    color: var(--who-afro-error-color);
+}
+
+.aho-di-form,
+.aho-di-mapping-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.aho-di-form-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.aho-di-form-actions--bottom {
+    border-top: 1px solid var(--who-afro-panel-border);
+    padding-top: 1rem;
+}
+
+.aho-di-section,
+.aho-di-mapping-row {
+    background: var(--who-afro-panel);
+    border: 1px solid var(--who-afro-panel-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgb(15 23 42 / 6%);
+    overflow: hidden;
+}
+
+.aho-di-section__header,
+.aho-di-mapping-row__header {
+    align-items: center;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--who-afro-panel-border);
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+}
+
+.aho-di-section__header h2,
+.aho-di-mapping-row__header strong {
+    color: var(--who-afro-ink);
+    font-size: 0.9rem;
+    font-weight: 850;
+    margin: 0;
+}
+
+.aho-di-form-grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 1rem;
+}
+
+.aho-di-field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.aho-di-field label,
+.aho-di-field > span,
+.aho-di-field > label {
+    color: var(--who-afro-label-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.aho-di-field--full {
+    grid-column: 1 / -1;
+}
+
+.aho-di-field--checkbox {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.aho-di-field--checkbox input {
+    min-height: auto;
+    width: auto;
+}
+
+.aho-di-field .help {
+    color: var(--who-afro-text-muted);
+    font-size: 0.74rem;
+    margin: 0;
+}
+
+.aho-di-field--error input,
+.aho-di-field--error select,
+.aho-di-field--error textarea {
+    border-color: var(--who-afro-error-color);
+}
+
+.aho-di-repeater {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.aho-muted {
+    color: var(--who-afro-text-muted);
+    font-size: 0.78rem;
+}
+
+body.aho-theme-dark .aho-secondary-action,
+body.aho-theme-dark .aho-di-filter-form select,
+body.aho-theme-dark .aho-di-field input,
+body.aho-theme-dark .aho-di-field select,
+body.aho-theme-dark .aho-di-field textarea,
+body.aho-theme-dark .aho-di-section,
+body.aho-theme-dark .aho-di-mapping-row {
+    background: #1f2937;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+body.aho-theme-dark .aho-di-section__header,
+body.aho-theme-dark .aho-di-mapping-row__header {
+    background: #16253a;
+    border-color: #334155;
+}
+
+body.aho-theme-dark .aho-di-section__header h2,
+body.aho-theme-dark .aho-di-mapping-row__header strong {
+    color: #f8fafc;
+}
+
+@media (max-width: 1180px) {
+    .aho-topbar-search {
+        display: flex;
+        left: 50%;
+        max-width: 13rem;
+        min-width: 8rem;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: clamp(8rem, 18vw, 13rem);
+    }
+}
+
+@media (max-width: 900px) {
+    .aho-topbar-search {
+        max-width: 10rem;
+        min-width: 6.5rem;
+        width: clamp(6.5rem, 24vw, 10rem);
+    }
+
+    .aho-topbar-country-flag {
+        height: 1.1rem;
+        width: 1.55rem;
+    }
+}
+
+@media (max-width: 767px) {
+    #header.aho-django-topbar .aho-topbar-brand__logo,
+    .aho-django-topbar .aho-topbar-brand__logo,
+    .aho-topbar-brand__logo {
+        height: 2.05rem !important;
+        max-width: 8.75rem;
+    }
+
+    .aho-di-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aho-sidebar-main-btn[data-icon="observatory"] .aho-sidebar-group-icon::before {
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    height: 0.58rem;
+    left: 0.18rem;
+    top: 0.44rem;
+    width: 0.8rem;
+}
+
+.aho-sidebar-main-btn[data-icon="observatory"] .aho-sidebar-group-icon::after {
+    background:
+        linear-gradient(currentColor 0 0) 0.18rem 0.34rem / 0.8rem 0.1rem,
+        linear-gradient(currentColor 0 0) 0.34rem 0.58rem / 0.08rem 0.38rem,
+        linear-gradient(currentColor 0 0) 0.56rem 0.58rem / 0.08rem 0.38rem,
+        linear-gradient(currentColor 0 0) 0.78rem 0.58rem / 0.08rem 0.38rem;
+    background-repeat: no-repeat;
+    border-left: 1.5px solid currentColor;
+    border-top: 1.5px solid currentColor;
+    height: 0.46rem;
+    left: 0.34rem;
+    top: 0.08rem;
+    transform: rotate(45deg);
+    width: 0.46rem;
 }
 
 .aho-sidebar-main-btn[data-icon="quality"] .aho-sidebar-group-icon::before,
@@ -3485,5 +3846,76 @@ body.aho-theme-dark .aho-api-table a {
     .aho-footer__meta {
         align-items: flex-start;
         flex-direction: column;
+    }
+}
+
+/* Final Laravel topbar parity overrides. */
+.aho-django-topbar,
+#header.aho-django-topbar {
+    height: var(--aho-topbar-height);
+    min-height: var(--aho-topbar-height);
+    padding-inline: 0.5rem;
+}
+
+#header.aho-django-topbar .aho-topbar-brand__logo,
+.aho-django-topbar .aho-topbar-brand__logo,
+.aho-topbar-brand__logo {
+    align-self: center;
+    height: clamp(2.25rem, 8vw, 3.15rem) !important;
+    margin-bottom: 0;
+    max-height: 3.15rem !important;
+    max-width: clamp(11.5rem, 25vw, 18rem);
+    min-height: 0;
+    object-position: left center;
+}
+
+.aho-topbar-search {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: none;
+    display: flex;
+    left: 50%;
+    margin-left: 0;
+    min-height: 2.25rem;
+    min-width: 12rem;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(30rem, 40vw);
+}
+
+.aho-topbar-search__icon {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.aho-topbar-search input {
+    color: white;
+}
+
+.aho-topbar-search input::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 1180px) {
+    .aho-topbar-search {
+        display: flex;
+        max-width: 13rem;
+        min-width: 8rem;
+        width: clamp(8rem, 18vw, 13rem);
+    }
+}
+
+@media (max-width: 900px) {
+    .aho-topbar-search {
+        display: flex;
+        max-width: 10rem;
+        min-width: 6.5rem;
+        width: clamp(6.5rem, 24vw, 10rem);
+    }
+}
+
+@media (max-width: 640px) {
+    .aho-topbar-search {
+        display: none;
     }
 }

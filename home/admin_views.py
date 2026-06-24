@@ -10,14 +10,17 @@ from django.contrib import messages
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db import DatabaseError, connection
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import NoReverseMatch, reverse
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 from rest_framework.authtoken.models import Token
+
+from .forms import DataIntegrationConnectionForm
+from .models import DataIntegrationConnection, DataIntegrationFieldMapping
 
 
 GLOBAL_DIRECT_SEARCHES = [
@@ -1025,133 +1028,233 @@ def data_quality_facts_dataset(request):
 
 @staff_member_required
 def data_integration_connections(request):
-    file_rows = _query_rows(
-        """
-        SELECT
-            f.id,
-            f.name,
-            f.file AS source,
-            f.date AS created_at,
-            hf.url,
-            hf.location_id,
-            hf.user_id,
-            COUNT(DISTINCT run.id) AS runs,
-            COUNT(r.id) AS imported_rows,
-            SUM(CASE WHEN r.success = 0 THEN 1 ELSE 0 END) AS failed_rows,
-            MAX(l.date) AS activity_at
-        FROM data_wizard_filesource f
-        LEFT JOIN home_filesource hf ON hf.filesource_ptr_id = f.id
-        LEFT JOIN django_content_type ct ON ct.app_label = 'sources' AND ct.model = 'filesource'
-        LEFT JOIN data_wizard_run run ON run.content_type_id = ct.id AND run.object_id = f.id
-        LEFT JOIN data_wizard_record r ON r.run_id = run.id
-        LEFT JOIN data_wizard_runlog l ON l.run_id = run.id
-        GROUP BY f.id, f.name, f.file, f.date, hf.url, hf.location_id, hf.user_id
-        ORDER BY f.date DESC, f.id DESC
-        LIMIT 100
-        """
-    )
-    url_rows = _query_rows(
-        """
-        SELECT
-            u.id,
-            u.name,
-            u.url AS source,
-            u.date AS created_at,
-            u.url AS url,
-            hu.location_id,
-            hu.user_id,
-            COUNT(DISTINCT run.id) AS runs,
-            COUNT(r.id) AS imported_rows,
-            SUM(CASE WHEN r.success = 0 THEN 1 ELSE 0 END) AS failed_rows,
-            MAX(l.date) AS activity_at
-        FROM data_wizard_urlsource u
-        LEFT JOIN home_urlsource hu ON hu.urlsource_ptr_id = u.id
-        LEFT JOIN django_content_type ct ON ct.app_label = 'sources' AND ct.model = 'urlsource'
-        LEFT JOIN data_wizard_run run ON run.content_type_id = ct.id AND run.object_id = u.id
-        LEFT JOIN data_wizard_record r ON r.run_id = run.id
-        LEFT JOIN data_wizard_runlog l ON l.run_id = run.id
-        GROUP BY u.id, u.name, u.url, u.date, hu.location_id, hu.user_id
-        ORDER BY u.date DESC, u.id DESC
-        LIMIT 100
-        """
-    )
-
-    rows = []
-    for row in file_rows:
-        failed_rows = _safe_int(row.get("failed_rows"))
-        imported_rows = _safe_int(row.get("imported_rows"))
-        source = row.get("url") or row.get("source") or ""
-        rows.append(
-            {
-                "id": row["id"],
-                "name": row.get("name") or _("Import file"),
-                "provider": _("Django DCT"),
-                "integration_method": _("Direct"),
-                "status": _("Error") if failed_rows else _("Active"),
-                "server_name": _host_from_url(source),
-                "api_url": source,
-                "sync_frequency": _("Manual"),
-                "last_test_status": _("Failed") if failed_rows else _("Validated"),
-                "field_mappings_count": imported_rows,
-                "last_synced_at": row.get("activity_at") or "",
-                "created_at": row.get("created_at") or "",
-                "updated_at": row.get("activity_at") or row.get("created_at") or "",
-            }
-        )
-
-    for row in url_rows:
-        failed_rows = _safe_int(row.get("failed_rows"))
-        imported_rows = _safe_int(row.get("imported_rows"))
-        source = row.get("source") or row.get("url") or ""
-        rows.append(
-            {
-                "id": row["id"],
-                "name": row.get("name") or _("Import URL"),
-                "provider": _("Custom"),
-                "integration_method": _("API"),
-                "status": _("Error") if failed_rows else _("Active"),
-                "server_name": _host_from_url(source),
-                "api_url": source,
-                "sync_frequency": _("Manual"),
-                "last_test_status": _("Failed") if failed_rows else _("Validated"),
-                "field_mappings_count": imported_rows,
-                "last_synced_at": row.get("activity_at") or "",
-                "created_at": row.get("created_at") or "",
-                "updated_at": row.get("activity_at") or row.get("created_at") or "",
-            }
-        )
-
-    rows.sort(key=lambda item: str(item.get("updated_at") or item.get("created_at") or ""), reverse=True)
-
-    headers = [
-        {"key": "id", "label": _("ID")},
-        {"key": "name", "label": _("Name")},
-        {"key": "provider", "label": _("Provider")},
-        {"key": "integration_method", "label": _("Method")},
-        {"key": "status", "label": _("Status")},
-        {"key": "server_name", "label": _("Server name")},
-        {"key": "api_url", "label": _("API URL")},
-        {"key": "sync_frequency", "label": _("Sync frequency")},
-        {"key": "last_test_status", "label": _("Last test status")},
-        {"key": "field_mappings_count", "label": _("Field mappings")},
-        {"key": "last_synced_at", "label": _("Last synced at")},
-        {"key": "created_at", "label": _("Created")},
-        {"key": "updated_at", "label": _("Modified")},
+    queryset = _data_integration_queryset(request).annotate(field_mappings_count=Count("field_mappings"))
+    queryset = _filter_data_integration_queryset(queryset, request)
+    connections = list(queryset[:100])
+    metrics = [
+        {"label": _("Connections"), "value": queryset.count()},
+        {"label": _("Active"), "value": queryset.filter(status=DataIntegrationConnection.STATUS_ACTIVE).count()},
+        {"label": _("Missing mappings"), "value": sum(1 for connection in connections if connection.field_mappings_count == 0)},
     ]
 
-    context = _table_context(
-        request,
-        title=_("Connections"),
-        subtitle=_("Data import connections presented with the same structure as the Laravel data integration module."),
-        headers=headers,
-        rows=rows[:100],
-        metrics=[
-            {"label": _("Connections"), "value": len(rows)},
-            {"label": _("Active"), "value": sum(1 for row in rows if row["status"] == _("Active"))},
-            {"label": _("Failed rows"), "value": sum(_safe_int(row["field_mappings_count"]) for row in rows if row["status"] == _("Error"))},
-        ],
+    context = admin.site.each_context(request)
+    context.update(
+        {
+            "title": _("Connections"),
+            "subtitle": _("External data integration connections, validation, and field mappings."),
+            "connections": connections,
+            "metrics": metrics,
+            "provider_choices": DataIntegrationConnection.PROVIDER_CHOICES,
+            "method_choices": DataIntegrationConnection.METHOD_CHOICES,
+            "status_choices": DataIntegrationConnection.STATUS_CHOICES,
+            "selected_filters": {
+                "provider": request.GET.get("provider", ""),
+                "integration_method": request.GET.get("integration_method", ""),
+                "status": request.GET.get("status", ""),
+            },
+        }
     )
-    return render(request, "admin/aho_table_page.html", context)
+    return render(request, "admin/data_integration_connections.html", context)
+
+
+def _data_integration_queryset(request):
+    queryset = DataIntegrationConnection.objects.select_related("location", "user").order_by("-updated_at", "-created_at")
+    if not request.user.is_superuser:
+        queryset = queryset.filter(location_id=getattr(request.user, "location_id", None))
+    return queryset
+
+
+def _filter_data_integration_queryset(queryset, request):
+    provider = request.GET.get("provider")
+    integration_method = request.GET.get("integration_method")
+    status = request.GET.get("status")
+    if provider:
+        queryset = queryset.filter(provider=provider)
+    if integration_method:
+        queryset = queryset.filter(integration_method=integration_method)
+    if status:
+        queryset = queryset.filter(status=status)
+    return queryset
+
+
+def _data_integration_object(request, pk):
+    return get_object_or_404(_data_integration_queryset(request), pk=pk)
+
+
+@staff_member_required
+def data_integration_connection_create(request):
+    return _data_integration_connection_form(request)
+
+
+@staff_member_required
+def data_integration_connection_edit(request, pk):
+    connection = _data_integration_object(request, pk)
+    return _data_integration_connection_form(request, connection)
+
+
+def _data_integration_connection_form(request, connection=None):
+    if request.method == "POST":
+        form = DataIntegrationConnectionForm(request.POST, instance=connection, user=request.user)
+        if form.is_valid():
+            saved = form.save()
+            messages.success(request, _("Connection saved."))
+            return redirect("aho_data_integration_connections")
+    else:
+        initial = {}
+        if connection is None and not request.user.is_superuser:
+            initial["location"] = getattr(request.user, "location_id", None)
+        form = DataIntegrationConnectionForm(instance=connection, user=request.user, initial=initial)
+
+    context = admin.site.each_context(request)
+    context.update(
+        {
+            "title": _("Create connection") if connection is None else _("Edit connection"),
+            "connection": connection,
+            "form": form,
+            "field_groups": list(form.grouped_fields()),
+        }
+    )
+    return render(request, "admin/data_integration_connection_form.html", context)
+
+
+@staff_member_required
+@require_POST
+def data_integration_connection_validate(request, pk):
+    connection = _data_integration_object(request, pk)
+    result = connection.validate_configuration()
+    connection.last_tested_at = timezone.now()
+    connection.last_test_status = result["status"]
+    connection.last_test_message = result["message"]
+    connection.save(update_fields=["last_tested_at", "last_test_status", "last_test_message", "updated_at"])
+    if result["ok"]:
+        messages.success(request, result["message"])
+    else:
+        messages.warning(request, result["message"])
+    return redirect("aho_data_integration_connections")
+
+
+@staff_member_required
+@require_POST
+def data_integration_connection_delete(request, pk):
+    connection = _data_integration_object(request, pk)
+    connection.delete()
+    messages.success(request, _("Connection deleted."))
+    return redirect("aho_data_integration_connections")
+
+
+@staff_member_required
+def data_integration_field_mapping(request, pk):
+    connection = _data_integration_object(request, pk)
+    external_fields = connection.external_fields()
+    rows = _mapping_rows_from_connection(connection)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "save")
+        if action == "refresh":
+            messages.success(request, _("External fields refreshed: %(count)s found.") % {"count": len(external_fields)})
+        elif action == "suggest":
+            rows = DataIntegrationFieldMapping.suggest_mappings(external_fields)
+            if rows:
+                messages.success(request, _("Mapping suggestions generated: %(count)s.") % {"count": len(rows)})
+            else:
+                messages.warning(request, _("No mapping suggestions were found."))
+        elif action == "save":
+            rows = _mapping_rows_from_post(request.POST)
+            _save_mapping_rows(connection, rows)
+            messages.success(request, _("Field mapping saved."))
+            return redirect("aho_data_integration_connections")
+
+    context = admin.site.each_context(request)
+    context.update(
+        {
+            "title": _("Field mapping configuration"),
+            "connection": connection,
+            "external_fields": external_fields,
+            "rows": rows or [{}],
+            "local_field_choices": DataIntegrationFieldMapping.LOCAL_FIELD_CHOICES,
+            "field_type_choices": DataIntegrationFieldMapping.FIELD_TYPE_CHOICES,
+            "reference_match_choices": DataIntegrationFieldMapping.REFERENCE_MATCH_CHOICES,
+        }
+    )
+    return render(request, "admin/data_integration_field_mapping.html", context)
+
+
+def _mapping_rows_from_connection(connection):
+    rows = []
+    for mapping in connection.field_mappings.all():
+        config = mapping.transformation_config or {}
+        rows.append(
+            {
+                "local_field": mapping.local_field,
+                "external_field": mapping.external_field,
+                "field_type": mapping.field_type,
+                "reference_match": config.get("reference_match", "auto"),
+                "is_required": mapping.is_required,
+                "default_value": config.get("default_value", ""),
+                "transformation_rule": config.get("rule", ""),
+                "notes": mapping.notes or "",
+            }
+        )
+    return rows
+
+
+def _mapping_rows_from_post(post_data):
+    fields = {
+        "local_field": post_data.getlist("local_field"),
+        "external_field": post_data.getlist("external_field"),
+        "field_type": post_data.getlist("field_type"),
+        "reference_match": post_data.getlist("reference_match"),
+        "default_value": post_data.getlist("default_value"),
+        "transformation_rule": post_data.getlist("transformation_rule"),
+        "notes": post_data.getlist("mapping_notes"),
+    }
+    required_values = set(post_data.getlist("is_required"))
+    rows = []
+    for index, local_field in enumerate(fields["local_field"]):
+        external_field = fields["external_field"][index] if index < len(fields["external_field"]) else ""
+        if not local_field and not external_field:
+            continue
+        rows.append(
+            {
+                "local_field": local_field,
+                "external_field": external_field,
+                "field_type": fields["field_type"][index] if index < len(fields["field_type"]) else "direct",
+                "reference_match": fields["reference_match"][index] if index < len(fields["reference_match"]) else "auto",
+                "is_required": str(index) in required_values,
+                "default_value": fields["default_value"][index] if index < len(fields["default_value"]) else "",
+                "transformation_rule": fields["transformation_rule"][index] if index < len(fields["transformation_rule"]) else "",
+                "notes": fields["notes"][index] if index < len(fields["notes"]) else "",
+            }
+        )
+    return rows
+
+
+def _save_mapping_rows(connection, rows):
+    DataIntegrationFieldMapping.objects.filter(connection=connection).delete()
+    seen_local_fields = set()
+    for index, row in enumerate(rows):
+        local_field = row.get("local_field")
+        external_field = row.get("external_field")
+        if not local_field or not external_field or local_field in seen_local_fields:
+            continue
+        seen_local_fields.add(local_field)
+        transformation_config = {}
+        if row.get("default_value"):
+            transformation_config["default_value"] = row["default_value"]
+        if row.get("transformation_rule"):
+            transformation_config["rule"] = row["transformation_rule"]
+        if DataIntegrationFieldMapping.is_reference_field(local_field):
+            transformation_config["reference_match"] = row.get("reference_match") or "auto"
+        DataIntegrationFieldMapping.objects.create(
+            connection=connection,
+            local_field=local_field,
+            external_field=external_field,
+            field_type=row.get("field_type") or "direct",
+            is_required=bool(row.get("is_required")),
+            transformation_config=transformation_config or None,
+            notes=row.get("notes") or None,
+            sort_order=index,
+        )
 
 
 @staff_member_required

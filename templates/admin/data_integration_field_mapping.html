@@ -1,0 +1,190 @@
+{% extends "admin/base_site.html" %}
+{% load i18n aho_admin %}
+
+{% block bodyclass %}{{ block.super }} aho-data-integration-page aho-form-page{% endblock %}
+
+{% block content %}
+<section class="aho-resource-page">
+    <p class="aho-resource-page__subtitle">{{ connection.name }}</p>
+
+    <form method="post" class="aho-di-mapping-form" data-aho-mapping-form>
+        {% csrf_token %}
+        <div class="aho-di-form-actions">
+            <a href="{% url 'aho_data_integration_connections' %}" class="aho-secondary-action">{% trans "Back to connections" %}</a>
+            <button type="submit" name="action" value="refresh" class="aho-secondary-action">{% trans "Refresh external fields" %}</button>
+            <button type="submit" name="action" value="suggest" class="aho-primary-action">{% trans "Suggest mappings" %}</button>
+            <button type="submit" name="action" value="save" class="aho-primary-action">{% trans "Save mapping" %}</button>
+        </div>
+
+        <datalist id="aho-external-fields">
+            {% for field in external_fields %}
+                <option value="{{ field }}"></option>
+            {% endfor %}
+        </datalist>
+
+        <div class="aho-di-repeater" data-aho-mapping-rows>
+            {% for row in rows %}
+                <section class="aho-di-mapping-row" data-aho-mapping-row>
+                    <header class="aho-di-mapping-row__header">
+                        <strong>{% trans "Field mapping" %}</strong>
+                        <button type="button" class="aho-secondary-action aho-di-remove-row" data-aho-remove-row>{% trans "Remove" %}</button>
+                    </header>
+                    <div class="aho-di-form-grid">
+                        <label class="aho-di-field">
+                            <span>{% trans "Local field" %}</span>
+                            {% with selected=row|get_item:"local_field" %}
+                            <select name="local_field" required>
+                                <option value=""></option>
+                                {% for value,label in local_field_choices %}
+                                    <option value="{{ value }}"{% if selected == value %} selected{% endif %}>{{ label }} ({{ value }})</option>
+                                {% endfor %}
+                            </select>
+                            {% endwith %}
+                        </label>
+                        <label class="aho-di-field">
+                            <span>{% trans "External field" %}</span>
+                            <input name="external_field" list="aho-external-fields" value="{{ row|get_item:'external_field'|default:'' }}" required>
+                        </label>
+                        <label class="aho-di-field">
+                            <span>{% trans "Field type" %}</span>
+                            {% with selected=row|get_item:"field_type"|default:"direct" %}
+                            <select name="field_type">
+                                {% for value,label in field_type_choices %}
+                                    <option value="{{ value }}"{% if selected == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endwith %}
+                        </label>
+                        <label class="aho-di-field">
+                            <span>{% trans "Reference match" %}</span>
+                            {% with selected=row|get_item:"reference_match"|default:"auto" %}
+                            <select name="reference_match">
+                                {% for value,label in reference_match_choices %}
+                                    <option value="{{ value }}"{% if selected == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endwith %}
+                        </label>
+                        <label class="aho-di-field aho-di-field--checkbox">
+                            <input type="checkbox" name="is_required" value="{{ forloop.counter0 }}"{% if row|get_item:"is_required" %} checked{% endif %}>
+                            <span>{% trans "Required" %}</span>
+                        </label>
+                        <label class="aho-di-field">
+                            <span>{% trans "Default value" %}</span>
+                            <input name="default_value" value="{{ row|get_item:'default_value'|default:'' }}">
+                        </label>
+                        <label class="aho-di-field aho-di-field--full">
+                            <span>{% trans "Transformation rule" %}</span>
+                            <textarea name="transformation_rule" rows="2">{{ row|get_item:'transformation_rule'|default:'' }}</textarea>
+                        </label>
+                        <label class="aho-di-field aho-di-field--full">
+                            <span>{% trans "Notes" %}</span>
+                            <textarea name="mapping_notes" rows="2">{{ row|get_item:'notes'|default:'' }}</textarea>
+                        </label>
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+
+        <div class="aho-di-form-actions aho-di-form-actions--bottom">
+            <button type="button" class="aho-secondary-action" data-aho-add-row>{% trans "Add mapping" %}</button>
+            <button type="submit" name="action" value="save" class="aho-primary-action">{% trans "Save mapping" %}</button>
+        </div>
+    </form>
+</section>
+
+<template id="aho-mapping-row-template">
+    <section class="aho-di-mapping-row" data-aho-mapping-row>
+        <header class="aho-di-mapping-row__header">
+            <strong>{% trans "Field mapping" %}</strong>
+            <button type="button" class="aho-secondary-action aho-di-remove-row" data-aho-remove-row>{% trans "Remove" %}</button>
+        </header>
+        <div class="aho-di-form-grid">
+            <label class="aho-di-field">
+                <span>{% trans "Local field" %}</span>
+                <select name="local_field" required>
+                    <option value=""></option>
+                    {% for value,label in local_field_choices %}
+                        <option value="{{ value }}">{{ label }} ({{ value }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="aho-di-field">
+                <span>{% trans "External field" %}</span>
+                <input name="external_field" list="aho-external-fields" required>
+            </label>
+            <label class="aho-di-field">
+                <span>{% trans "Field type" %}</span>
+                <select name="field_type">
+                    {% for value,label in field_type_choices %}
+                        <option value="{{ value }}"{% if value == "direct" %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="aho-di-field">
+                <span>{% trans "Reference match" %}</span>
+                <select name="reference_match">
+                    {% for value,label in reference_match_choices %}
+                        <option value="{{ value }}"{% if value == "auto" %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="aho-di-field aho-di-field--checkbox">
+                <input type="checkbox" name="is_required" value="0">
+                <span>{% trans "Required" %}</span>
+            </label>
+            <label class="aho-di-field">
+                <span>{% trans "Default value" %}</span>
+                <input name="default_value">
+            </label>
+            <label class="aho-di-field aho-di-field--full">
+                <span>{% trans "Transformation rule" %}</span>
+                <textarea name="transformation_rule" rows="2"></textarea>
+            </label>
+            <label class="aho-di-field aho-di-field--full">
+                <span>{% trans "Notes" %}</span>
+                <textarea name="mapping_notes" rows="2"></textarea>
+            </label>
+        </div>
+    </section>
+</template>
+
+<script>
+    (function () {
+        var form = document.querySelector('[data-aho-mapping-form]');
+        var rows = document.querySelector('[data-aho-mapping-rows]');
+        var template = document.getElementById('aho-mapping-row-template');
+        if (!form || !rows || !template) {
+            return;
+        }
+
+        function renumberRequired() {
+            rows.querySelectorAll('[data-aho-mapping-row]').forEach(function (row, index) {
+                var checkbox = row.querySelector('input[name="is_required"]');
+                if (checkbox) {
+                    checkbox.value = String(index);
+                }
+            });
+        }
+
+        rows.addEventListener('click', function (event) {
+            var button = event.target.closest('[data-aho-remove-row]');
+            if (!button) {
+                return;
+            }
+            var row = button.closest('[data-aho-mapping-row]');
+            if (row && rows.querySelectorAll('[data-aho-mapping-row]').length > 1) {
+                row.remove();
+                renumberRequired();
+            }
+        });
+
+        form.querySelector('[data-aho-add-row]').addEventListener('click', function () {
+            rows.appendChild(template.content.cloneNode(true));
+            renumberRequired();
+        });
+
+        renumberRequired();
+    })();
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.auth.admin import UserAdmin
 from regions.models import StgLocation
 from django.contrib.admin.models import LogEntry
@@ -10,6 +10,31 @@ from django.forms import TextInput,Textarea # customize textarea row and column
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'content_type', 'codename')
+    list_filter = ('content_type__app_label', 'content_type')
+    search_fields = (
+        'name',
+        'codename',
+        'content_type__app_label',
+        'content_type__model',
+    )
+    ordering = ('content_type__app_label', 'content_type__model', 'codename')
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 
 @admin.register(models.CustomUser)

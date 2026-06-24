@@ -222,6 +222,12 @@ class FactDataIndicator(models.Model):
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
+    approval_status = models.CharField(_('Approval Status'),max_length=30,
+        choices=STATUS_CHOICES,default=STATUS_CHOICES[0][0])
+    approved_by = models.ForeignKey(CustomUser, models.SET_NULL, blank=True,
+        null=True, db_column='approved_by', related_name='approved_indicator_values',
+        verbose_name=_('Approved By'))
+    approved_at = models.DateTimeField(_('Approved At'),blank=True,null=True)
     priority = models.BooleanField(default=False,verbose_name=_('Dashboard Priority?'))
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -299,6 +305,10 @@ class FactDataIndicator(models.Model):
     """
     def save(self, *args, **kwargs):
         self.period = self.get_period()
+        self.approval_status = self.comment or STATUS_CHOICES[0][0]
+        if self.approval_status != 'approved':
+            self.approved_by = None
+            self.approved_at = None
         super(FactDataIndicator, self).save(*args, **kwargs)
 
 

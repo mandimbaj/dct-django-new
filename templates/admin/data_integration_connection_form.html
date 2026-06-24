@@ -1,0 +1,76 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block bodyclass %}{{ block.super }} aho-data-integration-page aho-form-page{% endblock %}
+
+{% block content %}
+<form method="post" class="aho-di-form" data-aho-di-form novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="aho-di-form-actions">
+        <a href="{% url 'aho_data_integration_connections' %}" class="aho-secondary-action">{% trans "Back to connections" %}</a>
+        <button type="submit" class="aho-primary-action">{% trans "Save" %}</button>
+    </div>
+
+    {% for group in field_groups %}
+        <section class="aho-di-section" data-aho-di-section="{{ group.section }}">
+            <header class="aho-di-section__header">
+                <h2>{{ group.title }}</h2>
+            </header>
+            <div class="aho-di-form-grid">
+                {% for field in group.fields %}
+                    <div class="aho-di-field{% if field.errors %} aho-di-field--error{% endif %}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endfor %}
+
+    <div class="aho-di-form-actions aho-di-form-actions--bottom">
+        <a href="{% url 'aho_data_integration_connections' %}" class="aho-secondary-action">{% trans "Cancel" %}</a>
+        <button type="submit" class="aho-primary-action">{% trans "Save" %}</button>
+    </div>
+</form>
+
+<script>
+    (function () {
+        var form = document.querySelector('[data-aho-di-form]');
+        if (!form) {
+            return;
+        }
+        var method = form.querySelector('#id_integration_method');
+        var authType = form.querySelector('#id_auth_type');
+        var databaseDriver = form.querySelector('#id_database_driver');
+
+        function setSection(name, visible) {
+            var section = form.querySelector('[data-aho-di-section="' + name + '"]');
+            if (section) {
+                section.hidden = !visible;
+            }
+        }
+
+        function syncSections() {
+            var methodValue = method ? method.value : 'api';
+            var authValue = authType ? authType.value : 'none';
+            var driverValue = databaseDriver ? databaseDriver.value : '';
+            var isDirect = methodValue === 'direct';
+            setSection('direct', isDirect);
+            setSection('ssl', isDirect && ['mysql', 'pgsql', 'sqlsrv'].indexOf(driverValue) !== -1);
+            setSection('api', methodValue === 'api');
+            setSection('credentials', isDirect || authValue === 'basic');
+        }
+
+        [method, authType, databaseDriver].forEach(function (field) {
+            if (field) {
+                field.addEventListener('change', syncSections);
+            }
+        });
+        syncSections();
+    })();
+</script>
+{% endblock %}

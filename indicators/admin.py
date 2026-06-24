@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.conf import settings # allow import of projects settings at the root
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from django.forms import BaseInlineFormSet,ValidationError
 from parler.admin import (TranslatableAdmin,TranslatableStackedInline,
     TranslatableInlineModelAdmin)
@@ -44,17 +45,31 @@ from indicators.views import IndicatorSearchView
 from home.views import CategoryOptionSearchView,DataourceSearchView
 
 
+def _transition_indicator_status(request, queryset, status):
+    update = {
+        'comment': status,
+        'approval_status': status,
+    }
+    if status == 'approved':
+        update['approved_by_id'] = request.user.pk
+        update['approved_at'] = timezone.now()
+    else:
+        update['approved_by_id'] = None
+        update['approved_at'] = None
+    queryset.update(**update)
+
+
 #These 3 functions are used to register global actions performed on the data.
 def transition_to_pending (modeladmin, request, queryset):
-    queryset.update(comment = 'pending')
+    _transition_indicator_status(request, queryset, 'pending')
 transition_to_pending.short_description = "Mark selected as Pending"
 
 def transition_to_approved (modeladmin, request, queryset):
-    queryset.update (comment = 'approved')
+    _transition_indicator_status(request, queryset, 'approved')
 transition_to_approved.short_description = "Mark selected as Approved"
 
 def transition_to_rejected (modeladmin, request, queryset):
-    queryset.update (comment = 'rejected')
+    _transition_indicator_status(request, queryset, 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
 
@@ -346,6 +361,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
                 'measuremethod__translations').only(
                 'location','indicator','categoryoption','datasource',
                 'measuremethod','user','value_received','period','comment',
+                'approval_status','approved_by','approved_at',
                 'date_created','date_lastupdated','user__id','location__location_id',
                 'indicator__indicator_id','categoryoption__categoryoption_id',
                 'datasource__datasource_id','measuremethod__measuremethod_id',
@@ -478,6 +494,13 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     date_modified.admin_order_field = 'date_lastupdated'
     date_modified.short_description = 'Date Modified'
 
+    def date_approved(obj):
+        if not obj.approved_at:
+            return ''
+        return obj.approved_at.strftime("%d-%b-%Y")
+    date_approved.admin_order_field = 'approved_at'
+    date_approved.short_description = 'Approved At'
+
     # use a more descriptive approval status column name
     def get_status(self, obj):
         return obj.get_comment_display()
@@ -490,11 +513,17 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     instance (form), and boolean value (change) based on add or changes to object.
     """
     def save_model(self, request, obj, form, change):
+        if change:
+            obj.comment = 'pending'
+            obj.approval_status = 'pending'
+            obj.approved_by = None
+            obj.approved_at = None
         if not obj.pk:
             obj.user = request.user # only set user during the first save.
         super().save_model(request, obj, form, change)
 
-    readonly_fields = ('indicator', 'location', 'start_period',)
+    readonly_fields = ('indicator', 'location', 'start_period','comment',
+        'approval_status','approved_by','approved_at',)
     fieldsets = ( # used to create frameset sections on the data entry form
         ('Indicator Details', {
                 'fields': ('indicator','location', 'categoryoption',
@@ -505,11 +534,15 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
                 'numerator_value','denominator_value','min_value',
                 'max_value','target_value','string_value'),
             }),
+            ('Approval', {
+                'fields': ('comment','approval_status','approved_by','approved_at'),
+            }),
         )
     # The list display includes a callable get_afrocode that returns indicator code
     list_display=('indicator','location', get_afrocode,'period',
                   'categoryoption','value_received','string_value',
-                  'datasource','get_status','priority',date_created,date_modified,)
+                  'datasource','get_status','priority',date_created,
+                  date_modified,date_approved,'approved_by',)
 
     search_fields = ('indicator__translations__name','location__translations__name',
         'period','indicator__afrocode','comment','priority') #display search field
@@ -518,7 +551,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
         DatasourceFilter,CategoryOptionFilter]
 
     list_select_related = ('indicator','location','categoryoption','datasource',
-        'measuremethod','user',)
+        'measuremethod','user','approved_by',)
 
     list_display_links = ('location',get_afrocode, 'indicator',)
 
