@@ -111,7 +111,7 @@ REST_FRAMEWORK = {
         'user': '10000/day',
         'anon': '10000/day'
     },
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema', #added 27/08
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema', #added 27/08
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
     'DATETIME_FORMAT': 'iso-8601',
