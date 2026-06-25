@@ -235,10 +235,12 @@ AZURE_CUSTOM_DOMAIN = os.environ['AZURE_DOMAIN']
 
 # Configurations for serving static assets (CSS, JavaScript, Images)
 STATIC_LOCATION='static' #This works well as the static location
-STATICFILES_STORAGE  = 'aho_datacapturetool.azurestorage.AzureStaticStorage'
+STORAGES = {
+    "default": {"BACKEND": "aho_datacapturetool.azurestorage.AzureMediaStorage"},
+    "staticfiles": {"BACKEND": "aho_datacapturetool.azurestorage.AzureStaticStorage"},
+}
 STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/{STATIC_LOCATION}/'
 # Configurations for serving and uploading files into Azure Blob storage
-DEFAULT_FILE_STORAGE = 'aho_datacapturetool.azurestorage.AzureMediaStorage'
 AZURE_BLOB_MAX_MEMORY_SIZE = os.environ['BLOB_MAX_MEMORY_SIZE']
 
 MEDIA_LOCATION='media' #This works well as the storage location
