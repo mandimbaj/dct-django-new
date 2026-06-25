@@ -14,7 +14,6 @@ _azure_hosts = [
     f"{os.environ['WEBSITE_SITE_NAME']}.azurewebsites.net"
     if os.environ.get('WEBSITE_SITE_NAME') else None,
     'af-aho-datacapturetool-new.azurewebsites.net',
-    'af-aho-dct-f8hnfwbcb4e6c0bg.westeurope-01.azurewebsites.net',
     'dct.aho.afro.who.int',
 ]
 
