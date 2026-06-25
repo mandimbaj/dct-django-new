@@ -66,6 +66,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 3600  # 1 heure
+SESSION_SAVE_EVERY_REQUEST = True
+
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField' # handles Django 3.2 primary key
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None # to turn of suspecious operations error
 
