@@ -70,6 +70,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 3600  # 1 heure
 SESSION_SAVE_EVERY_REQUEST = True
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SESSION_COOKIE_SAMESITE = 'None' 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField' # handles Django 3.2 primary key
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None # to turn of suspecious operations error
 
