@@ -21,7 +21,6 @@ class Migration(migrations.Migration):
                 ('filesource_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='sources.FileSource')),
                 ('url', models.CharField(blank=True, max_length=255, null=True)),
                 ('location', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='regions.StgLocation', verbose_name='Location Name')),
-                ('user', models.ForeignKey(default=2, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='User Name (Email)')),
             ],
             bases=('sources.filesource',),
         ),
