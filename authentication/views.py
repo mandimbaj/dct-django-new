@@ -45,10 +45,8 @@ def microsoft_login(request):
             redirect=os.environ['REDIRECT_PYPT'] # redirects to English callback UR
 
     flow = get_sign_in_flow(redirect)# Important! pass redirect arg to auth_utils
-    try:
-        request.session['auth_flow'] = flow
-    except Exception as e:
-        print(e)
+    request.session['auth_flow'] = flow
+    request.session.save()
     return HttpResponseRedirect(flow['auth_uri'])
 
 
