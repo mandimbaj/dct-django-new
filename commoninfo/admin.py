@@ -27,12 +27,16 @@ def get_app_list(context, order=True):
     admin_site = get_admin_site(context)
     request = context['request']
     language = request.LANGUAGE_CODE
+    hidden_app_labels = {'auth', 'sources'}
     # import pdb; pdb.set_trace()
 
 
     app_dict = {}
     for model, model_admin in admin_site._registry.items():
         app_label = model._meta.app_label
+        if app_label in hidden_app_labels:
+            continue
+
         try:
             has_module_perms = model_admin.has_module_permission(request)
         except AttributeError:

@@ -703,14 +703,9 @@ class HSC_Programs_LookupAdmin(OverideExport,ExportActionModelAdmin):
             request, object_id, extra_context=extra_context)
 
     def get_queryset(self, request):
-        language = request.LANGUAGE_CODE
-
-        groups = list(request.user.groups.values_list('user', flat=True))
-        db_locations = StgLocation.objects.all().order_by('location_id')
-        qs = super().get_queryset(request).filter(
-            language_code=language).order_by(
-                'indicator_name').distinct()
-        return qs
+        return super().get_queryset(request).only(
+            'indicator_id', 'indicator_name', 'code', 'program_name', 'level'
+        ).order_by('indicator_name').distinct()
     
     resource_class = HSCDomainLookupResourceExport
     actions = ExportActionModelAdmin.actions

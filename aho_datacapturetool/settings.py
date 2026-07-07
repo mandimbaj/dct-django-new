@@ -87,6 +87,12 @@ DATA_WIZARD = {
     'PERMISSION': 'rest_framework.permissions.IsAdminUser',
 }
 
+# Keep the upgraded data-wizard package aligned with the existing warehouse tables.
+DATA_WIZARD_SOURCE_TABLES = {
+    'file': 'data_wizard_filesource',
+    'url': 'data_wizard_urlsource',
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
