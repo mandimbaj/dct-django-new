@@ -53,6 +53,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://dct.afro.who.int',
+    'https://af-aho-datacapturetool.azurewebsites.net',
+    'https://af-aho-datacapturetool-new.azurewebsites.net',
+]
+
 """
 Use secure cookies for the session and crossite protection. An attacker could
 sniff and capture an unencrypted cookies with and hijack the user’s session.

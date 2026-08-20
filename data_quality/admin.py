@@ -137,6 +137,7 @@ class Facts_DataFilterAdmin(OverideExport,ImportExportActionModelAdmin):
 @admin.register(Facts_DataFrame)
 class Facts_DataFrameAdmin(OverideExport):
     change_list_template = 'admin/data_quality/change_list.html' # add buttons for validations
+    import_export_change_list_template = 'admin/data_quality/change_list_export.html'
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'105'})},

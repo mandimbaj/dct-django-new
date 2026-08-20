@@ -1,0 +1,13 @@
+{% extends "admin/import_export/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {% include "admin/import_export/change_list_export_item.html" %}
+    <li>
+        <a href="{% url 'data_quality:quality_validation' %}" class="addlink">{% trans "Check Data Quality" %}</a>
+    </li>
+    <li>
+        <a href="{% url 'data_quality:load_validators' %}" class="addlink">{% trans "Load Validators" %}</a>
+    </li>
+    {{ block.super }}
+{% endblock %}

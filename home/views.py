@@ -20,6 +20,10 @@ from django.conf import settings
 #Facilitate single sign on into Microsoft Azure AD
 from authentication.auth.auth_decorators import microsoft_login_required
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class StgDisagregationCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = StgDisagregationCategorySerializer
     permission_classes = (permissions.IsAuthenticated,
@@ -150,6 +154,7 @@ def handler404(request, exception):
     return response
 
 def handler500(request):
+    logger.exception("Erreur 500 sur %s", request.path)
     context = {}
     response = render(request, "errors/500.html", context=context)
     response.status_code = 500

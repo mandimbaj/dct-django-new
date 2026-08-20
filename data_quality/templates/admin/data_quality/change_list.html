@@ -1,11 +1,15 @@
 {% extends "admin/change_list.html" %}
 {% load i18n static %}
 
-{% block object-tools-items %}
-{{ block.super }}
-<li>
-    <a href="{% url 'data_quality:quality_validation' %}" class="addlink"> Check Data Quality</a>
-    <a href="{% url 'data_quality:load_validators' %}" class="btn btn-high btn-success"> Load Validators</a>
-
-</li>
+{% block object-tools %}
+<ul class="object-tools">
+    {% block object-tools-items %}
+        <li>
+            <a href="{% url 'data_quality:quality_validation' %}" class="addlink">{% trans "Check Data Quality" %}</a>
+        </li>
+        <li>
+            <a href="{% url 'data_quality:load_validators' %}" class="addlink">{% trans "Load Validators" %}</a>
+        </li>
+    {% endblock %}
+</ul>
 {% endblock %}

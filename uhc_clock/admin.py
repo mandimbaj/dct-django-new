@@ -116,6 +116,7 @@ class UHClockIndicatorThemeAdmin(TranslatableAdmin,OverideExport):
 @admin.register(Facts_UHC_DatabaseView)
 class Facts_DataViewAdmin(OverideExport):
     change_list_template = 'admin/data_quality/change_list.html' # add buttons for validations
+    import_export_change_list_template = 'admin/data_quality/change_list_export.html'
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'105'})},

@@ -18,7 +18,7 @@ SECRET_KEY = os.environ['SECRET']
 
 DEBUG = True # Debug must be set to False in production for security purposes
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','dct.aho.afro.who.int',
+ALLOWED_HOSTS = ['localhost','127.0.0.1','dct.afro.who.int',
                 'af-aho-datacapturetool.azurewebsites.net',
                 'af-aho-datacapturetool-stage.azurewebsites.net',
                 'af-aho-datacapturetool-new.azurewebsites.net',
@@ -172,6 +172,11 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://dct.afro.who.int',
+    'https://af-aho-datacapturetool.azurewebsites.net',
+    'https://af-aho-datacapturetool-new.azurewebsites.net',
+]
 ROOT_URLCONF = 'aho_datacapturetool.urls'
 
 TEMPLATES = [
@@ -350,3 +355,24 @@ ADMIN_REORDER = (
     'regions.StgSpecialcategorization')},
 
 )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
