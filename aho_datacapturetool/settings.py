@@ -20,7 +20,6 @@ DEBUG = True # Debug must be set to False in production for security purposes
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1',
                 'dct.afro.who.int',
-                'dct.aho.afro.who.int',
                 'af-aho-datacapturetool.azurewebsites.net',
                 'af-aho-datacapturetool-stage.azurewebsites.net',
                 'af-aho-datacapturetool-new.azurewebsites.net',
@@ -29,7 +28,6 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1',
 
 CSRF_TRUSTED_ORIGINS = [
     'https://dct.afro.who.int',
-    'https://dct.aho.afro.who.int',
     'https://af-aho-datacapturetool.azurewebsites.net',
     'https://af-aho-datacapturetool-stage.azurewebsites.net',
     'https://af-aho-datacapturetool-new.azurewebsites.net',

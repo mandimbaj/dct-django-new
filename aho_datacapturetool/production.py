@@ -53,6 +53,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+ALLOWED_HOSTS = ['localhost','127.0.0.1',
+                'dct.afro.who.int',
+                'af-aho-datacapturetool.azurewebsites.net',
+                'af-aho-datacapturetool-stage.azurewebsites.net',
+                'af-aho-datacapturetool-new.azurewebsites.net',
+                'af-aho-dct-f8hnfwbcb4e6c0bg.westeurope-01.azurewebsites.net',
+                'f54e-196-216-86-84.ngrok-free.app']
+
 CSRF_TRUSTED_ORIGINS = [
     'https://dct.afro.who.int',
     'https://af-aho-datacapturetool.azurewebsites.net',
