@@ -44,6 +44,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    concurrency:
+      group: azure-af-aho-datacapturetool-deploy
+      cancel-in-progress: false
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
