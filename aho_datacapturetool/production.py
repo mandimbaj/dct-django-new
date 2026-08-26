@@ -30,6 +30,11 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 
+# Unauthenticated administration requests must enter through Microsoft SSO.
+# The local settings keep Django's password login available for development.
+LOGIN_URL = 'microsoft_authentication:microsoft_authentication_login'
+LOGIN_REDIRECT_URL = 'admin:index'
+
 # Swagger is kept optional in urls.py because django-rest-swagger is not
 # compatible with the modern Django/DRF stack used by the deployment image.
 INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'rest_framework_swagger']
