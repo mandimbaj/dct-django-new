@@ -860,7 +860,7 @@ class IndicatorFactArchiveAdmin(OverideExport):
             kwargs["queryset"] = StgCategoryoption.objects.select_related(
                 'category').prefetch_related('translations__master').filter(
                 translations__language_code=language).order_by(
-                'category__translation__name','translations__name')
+                'category__translations__name','translations__name')
 
         if db_field.name == "datasource":
             kwargs["queryset"] = StgDatasource.objects.prefetch_related(
