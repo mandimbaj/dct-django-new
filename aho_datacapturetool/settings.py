@@ -101,6 +101,11 @@ DATA_WIZARD_SOURCE_TABLES = {
     'url': 'data_wizard_urlsource',
 }
 
+# Keep data-wizard migrations aligned with the legacy table names above.
+MIGRATION_MODULES = {
+    'sources': 'aho_datacapturetool.data_wizard_source_migrations',
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',

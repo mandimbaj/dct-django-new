@@ -1,0 +1,30 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    initial = True
+
+    dependencies = []
+
+    operations = [
+        migrations.CreateModel(
+            name='FileSource',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(blank=True, max_length=255, null=True)),
+                ('file', models.FileField(upload_to='datawizard/')),
+                ('date', models.DateTimeField(auto_now_add=True)),
+            ],
+            options={'db_table': 'data_wizard_filesource'},
+        ),
+        migrations.CreateModel(
+            name='URLSource',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(blank=True, max_length=255, null=True)),
+                ('url', models.URLField()),
+                ('date', models.DateTimeField(auto_now_add=True)),
+            ],
+            options={'db_table': 'data_wizard_urlsource'},
+        ),
+    ]
