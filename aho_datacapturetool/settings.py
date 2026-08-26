@@ -167,6 +167,7 @@ SWAGGER_SETTINGS = {
 }
 
 MIDDLEWARE = [
+    'aho_datacapturetool.middleware.ForceHostMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
