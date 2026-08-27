@@ -11,6 +11,7 @@ idna==3.11
 urllib3==2.5.0
 whitenoise==6.9.0
 gunicorn==23.0.0
+django-admin-menu
 django-modeladmin-reorder
 django-parler
 django-parler-rest
