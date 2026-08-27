@@ -14,7 +14,7 @@ _azure_hosts = [
     f"{os.environ['WEBSITE_SITE_NAME']}.azurewebsites.net"
     if os.environ.get('WEBSITE_SITE_NAME') else None,
     'af-aho-datacapturetool-new.azurewebsites.net',
-    'dct.aho.afro.who.int',
+    'dct.afro.who.int',
 ]
 
 ALLOWED_HOSTS = list(dict.fromkeys(
